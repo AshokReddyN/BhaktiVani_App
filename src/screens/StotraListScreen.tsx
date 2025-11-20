@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet } from 'react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
+import { Ionicons } from '@expo/vector-icons'
 import { database } from '../database'
 import Stotra from '../database/models/Stotra'
 import { Q } from '@nozbe/watermelondb'
@@ -31,8 +32,8 @@ const StotraListScreen = () => {
     }, [deityId, searchQuery])
 
     useEffect(() => {
-        navigation.setOptions({ title: deityName })
-    }, [deityName])
+        navigation.setOptions({ headerShown: false })
+    }, [navigation])
 
     const renderItem = ({ item }: { item: Stotra }) => (
         <TouchableOpacity
@@ -41,30 +42,41 @@ const StotraListScreen = () => {
         >
             <View style={styles.stotraContent}>
                 <View style={styles.iconContainer}>
-                    <Text style={styles.icon}>📄</Text>
+                    <Ionicons name="book" size={24} color="#EA580C" />
                 </View>
                 <Text style={styles.stotraTitle}>{item.title}</Text>
             </View>
-            <Text style={styles.arrow}>›</Text>
+            <Ionicons
+                name={item.isFavorite ? "bookmark" : "bookmark-outline"}
+                size={24}
+                color={item.isFavorite ? "#F59E0B" : "#D1D5DB"}
+            />
         </TouchableOpacity>
     )
 
     return (
         <View style={styles.container}>
-            <View style={styles.searchContainer}>
-                <Text style={styles.searchIcon}>🔍</Text>
-                <TextInput
-                    placeholder="మంత్రం కోసం వెతకండి"
-                    style={styles.searchInput}
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
+            <View style={styles.header}>
+                <Text style={styles.headerTitle}>భక్తి వాణి</Text>
+            </View>
+            <View style={styles.content}>
+                <View style={styles.searchContainer}>
+                    <Ionicons name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
+                    <TextInput
+                        placeholder="మంత్రం కోసం వెతకండి"
+                        style={styles.searchInput}
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                        placeholderTextColor="#9CA3AF"
+                    />
+                </View>
+                <FlatList
+                    data={stotras}
+                    renderItem={renderItem}
+                    keyExtractor={item => item.id}
+                    showsVerticalScrollIndicator={false}
                 />
             </View>
-            <FlatList
-                data={stotras}
-                renderItem={renderItem}
-                keyExtractor={item => item.id}
-            />
         </View>
     )
 }
@@ -73,33 +85,46 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFF7ED',
+    },
+    header: {
+        backgroundColor: '#F97316',
+        paddingTop: 50,
+        paddingBottom: 16,
+        paddingHorizontal: 16,
+        alignItems: 'center',
+    },
+    headerTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+    },
+    content: {
+        flex: 1,
         padding: 16,
     },
     searchContainer: {
-        backgroundColor: 'white',
-        borderRadius: 8,
+        backgroundColor: '#FEF3C7',
+        borderRadius: 12,
         padding: 12,
-        marginBottom: 16,
+        marginBottom: 20,
         flexDirection: 'row',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
+        borderWidth: 1,
+        borderColor: '#FDE68A',
     },
     searchIcon: {
         marginRight: 8,
     },
     searchInput: {
         flex: 1,
-        fontSize: 18,
+        fontSize: 16,
+        color: '#1F2937',
     },
     stotraCard: {
-        backgroundColor: '#FFEDD5',
+        backgroundColor: '#FEF3C7',
         padding: 16,
         marginBottom: 12,
-        borderRadius: 8,
+        borderRadius: 12,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -107,28 +132,22 @@ const styles = StyleSheet.create({
     stotraContent: {
         flexDirection: 'row',
         alignItems: 'center',
+        flex: 1,
     },
     iconContainer: {
-        width: 40,
-        height: 40,
-        backgroundColor: '#FED7AA',
+        width: 48,
+        height: 48,
+        backgroundColor: '#FFFFFF',
         borderRadius: 8,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
     },
-    icon: {
-        color: '#9A3412',
-        fontWeight: 'bold',
-    },
     stotraTitle: {
         fontSize: 18,
         fontWeight: '600',
         color: '#1F2937',
-    },
-    arrow: {
-        color: '#9CA3AF',
-        fontSize: 24,
+        flex: 1,
     },
 })
 
