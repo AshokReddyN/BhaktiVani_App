@@ -109,6 +109,30 @@ const SettingsScreen = () => {
                 <Text style={styles.themeButtonTextWhite}>Dark</Text>
                 {theme === 'dark' && <Text style={styles.checkmarkDark}>✓</Text>}
             </TouchableOpacity>
+
+            {/* Preview Section */}
+            <View style={styles.previewSection}>
+                <View style={[
+                    styles.previewCard,
+                    {
+                        backgroundColor: SettingsService.getThemeColors(theme).background,
+                    }
+                ]}>
+                    <Text style={[
+                        styles.previewText,
+                        {
+                            fontSize: SettingsService.getFontSizeValue(fontSize),
+                            lineHeight: SettingsService.getFontSizeValue(fontSize) * 1.6,
+                            color: SettingsService.getThemeColors(theme).text,
+                        }
+                    ]}>
+                        ఓం భూర్భువస్సువః{'\n'}
+                        తత్సవితుర్వరేణ్యం{'\n'}
+                        భర్గో దేవస్య ధీమహి{'\n'}
+                        ధియో యోనః ప్రచోదయాత్
+                    </Text>
+                </View>
+            </View>
         </View>
     )
 }
@@ -218,6 +242,19 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: '#F97316',
         fontWeight: 'bold',
+    },
+    previewSection: {
+        marginTop: 32,
+    },
+    previewCard: {
+        borderRadius: 12,
+        padding: 24,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+    },
+    previewText: {
+        textAlign: 'center',
+        fontWeight: '500',
     },
 })
 
