@@ -1,27 +1,113 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { SettingsService, FontSize, Theme } from '../utils/settings'
 
 const SettingsScreen = () => {
+    const [fontSize, setFontSize] = useState<FontSize>('medium')
+    const [theme, setTheme] = useState<Theme>('light')
+
+    useEffect(() => {
+        const loadSettings = async () => {
+            const loadedFontSize = await SettingsService.getFontSize()
+            const loadedTheme = await SettingsService.getTheme()
+            setFontSize(loadedFontSize)
+            setTheme(loadedTheme)
+        }
+        loadSettings()
+    }, [])
+
+    const handleFontSizeChange = async (size: FontSize) => {
+        setFontSize(size)
+        await SettingsService.setFontSize(size)
+    }
+
+    const handleThemeChange = async (selectedTheme: Theme) => {
+        setTheme(selectedTheme)
+        await SettingsService.setTheme(selectedTheme)
+    }
+
     return (
         <View style={styles.container}>
             <Text style={styles.sectionTitle}>అక్షర పరిమాణం (Font Size)</Text>
             <View style={styles.fontSizeContainer}>
-                <TouchableOpacity style={styles.fontSizeButton}><Text>చిన్న</Text></TouchableOpacity>
-                <TouchableOpacity style={[styles.fontSizeButton, styles.fontSizeButtonActive]}><Text>మధ్యస్థం</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.fontSizeButton}><Text>పెద్ద</Text></TouchableOpacity>
+                <TouchableOpacity
+                    style={[
+                        styles.fontSizeButton,
+                        fontSize === 'small' && styles.fontSizeButtonActive
+                    ]}
+                    onPress={() => handleFontSizeChange('small')}
+                >
+                    <Text style={[
+                        styles.fontSizeButtonText,
+                        fontSize === 'small' && styles.fontSizeButtonTextActive
+                    ]}>
+                        చిన్న
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[
+                        styles.fontSizeButton,
+                        fontSize === 'medium' && styles.fontSizeButtonActive
+                    ]}
+                    onPress={() => handleFontSizeChange('medium')}
+                >
+                    <Text style={[
+                        styles.fontSizeButtonText,
+                        fontSize === 'medium' && styles.fontSizeButtonTextActive
+                    ]}>
+                        మధ్యస్థం
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[
+                        styles.fontSizeButton,
+                        fontSize === 'large' && styles.fontSizeButtonActive
+                    ]}
+                    onPress={() => handleFontSizeChange('large')}
+                >
+                    <Text style={[
+                        styles.fontSizeButtonText,
+                        fontSize === 'large' && styles.fontSizeButtonTextActive
+                    ]}>
+                        పెద్ద
+                    </Text>
+                </TouchableOpacity>
             </View>
 
             <Text style={styles.sectionTitle}>నేపథ్యం (Theme)</Text>
             <View style={styles.themeRow}>
-                <TouchableOpacity style={[styles.themeButton, styles.themeButtonLight]}>
+                <TouchableOpacity
+                    style={[
+                        styles.themeButton,
+                        styles.themeButtonLight,
+                        theme === 'light' && styles.themeButtonActive
+                    ]}
+                    onPress={() => handleThemeChange('light')}
+                >
                     <Text style={styles.themeButtonText}>Light</Text>
+                    {theme === 'light' && <Text style={styles.checkmark}>✓</Text>}
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.themeButton, styles.themeButtonSepia]}>
+                <TouchableOpacity
+                    style={[
+                        styles.themeButton,
+                        styles.themeButtonSepia,
+                        theme === 'sepia' && styles.themeButtonActive
+                    ]}
+                    onPress={() => handleThemeChange('sepia')}
+                >
                     <Text style={styles.themeButtonTextDark}>Sepia</Text>
+                    {theme === 'sepia' && <Text style={styles.checkmark}>✓</Text>}
                 </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.themeButtonDark}>
+            <TouchableOpacity
+                style={[
+                    styles.themeButtonDark,
+                    theme === 'dark' && styles.themeButtonDarkActive
+                ]}
+                onPress={() => handleThemeChange('dark')}
+            >
                 <Text style={styles.themeButtonTextWhite}>Dark</Text>
+                {theme === 'dark' && <Text style={styles.checkmarkDark}>✓</Text>}
             </TouchableOpacity>
         </View>
     )
@@ -59,6 +145,14 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 2,
         elevation: 2,
+    },
+    fontSizeButtonText: {
+        fontSize: 14,
+        color: '#6B7280',
+    },
+    fontSizeButtonTextActive: {
+        fontWeight: 'bold',
+        color: '#1F2937',
     },
     themeRow: {
         flexDirection: 'row',
@@ -98,6 +192,30 @@ const styles = StyleSheet.create({
     themeButtonTextWhite: {
         fontWeight: 'bold',
         color: 'white',
+    },
+    themeButtonActive: {
+        borderWidth: 3,
+        borderColor: '#F97316',
+    },
+    themeButtonDarkActive: {
+        borderWidth: 3,
+        borderColor: '#F97316',
+    },
+    checkmark: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        fontSize: 20,
+        color: '#F97316',
+        fontWeight: 'bold',
+    },
+    checkmarkDark: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        fontSize: 20,
+        color: '#F97316',
+        fontWeight: 'bold',
     },
 })
 

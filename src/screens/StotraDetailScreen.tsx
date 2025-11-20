@@ -1,55 +1,106 @@
 import React, { useEffect, useLayoutEffect, useState, useCallback } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native'
 import { database } from '../database'
 import Stotra from '../database/models/Stotra'
+import { SettingsService, FontSize, Theme } from '../utils/settings'
 
 const StotraDetailScreen = () => {
     const navigation = useNavigation()
     const route = useRoute()
     const { stotraId, title } = route.params as { stotraId: string, title: string }
     const [stotra, setStotra] = useState<Stotra | null>(null)
+    const [isFavorite, setIsFavorite] = useState(false)
     const [fontSize, setFontSize] = useState(18)
+    const [fontSizeSetting, setFontSizeSetting] = useState<FontSize>('medium')
+    const [theme, setTheme] = useState<Theme>('light')
+    const [isToggling, setIsToggling] = useState(false)
+
+    // Load settings when screen focuses
+    useFocusEffect(
+        useCallback(() => {
+            const loadSettings = async () => {
+                const loadedFontSize = await SettingsService.getFontSize()
+                const loadedTheme = await SettingsService.getTheme()
+                setFontSizeSetting(loadedFontSize)
+                setTheme(loadedTheme)
+                setFontSize(SettingsService.getFontSizeValue(loadedFontSize))
+            }
+            loadSettings()
+        }, [])
+    )
 
     useEffect(() => {
         const fetchStotra = async () => {
             const data = await database.get<Stotra>('stotras').find(stotraId)
             setStotra(data)
+            setIsFavorite(data.isFavorite)
         }
         fetchStotra()
     }, [stotraId])
 
     const toggleFavorite = useCallback(async () => {
-        if (stotra) {
+        if (!stotra || isToggling) return
+        
+        setIsToggling(true)
+        
+        // Optimistic update - update UI immediately
+        const newFavoriteState = !isFavorite
+        setIsFavorite(newFavoriteState)
+
+        try {
+            // Update database
             await database.write(async () => {
                 await stotra.update(s => {
-                    s.isFavorite = !s.isFavorite
+                    s.isFavorite = newFavoriteState
                 })
             })
 
-            // Refetch to update state and trigger re-render
+            // Refetch to ensure sync with database
             const updated = await database.get<Stotra>('stotras').find(stotraId)
             setStotra(updated)
+            setIsFavorite(updated.isFavorite)
+        } catch (error) {
+            console.error('Error toggling favorite:', error)
+            // Revert on error
+            setIsFavorite(!newFavoriteState)
+        } finally {
+            setIsToggling(false)
         }
-    }, [stotra, stotraId])
+    }, [stotra, stotraId, isFavorite, isToggling])
 
     useLayoutEffect(() => {
         navigation.setOptions({
             title: title,
             headerRight: () => (
-                <TouchableOpacity onPress={toggleFavorite} key={`fav-${stotra?.isFavorite}`}>
-                    <Text style={styles.favoriteIcon}>{stotra?.isFavorite ? '★' : '☆'}</Text>
+                <TouchableOpacity 
+                    onPress={toggleFavorite} 
+                    disabled={isToggling}
+                    style={styles.favoriteButton}
+                >
+                    <Text style={styles.favoriteIcon}>
+                        {isFavorite ? '★' : '☆'}
+                    </Text>
                 </TouchableOpacity>
             )
         })
-    }, [navigation, title, stotra?.isFavorite, toggleFavorite])
+    }, [navigation, title, isFavorite, toggleFavorite, isToggling])
 
     if (!stotra) return <View style={styles.loading}><Text>Loading...</Text></View>
 
+    const themeColors = SettingsService.getThemeColors(theme)
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: themeColors.background }]}>
             <ScrollView style={styles.scrollView}>
-                <Text style={[styles.content, { fontSize, lineHeight: fontSize * 1.6 }]}>
+                <Text style={[
+                    styles.content,
+                    {
+                        fontSize,
+                        lineHeight: fontSize * 1.6,
+                        color: themeColors.text,
+                    }
+                ]}>
                     {stotra.content}
                 </Text>
             </ScrollView>
@@ -91,10 +142,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    favoriteButton: {
+        marginRight: 16,
+        padding: 4,
+    },
     favoriteIcon: {
         fontSize: 24,
         color: '#F97316',
-        marginRight: 16,
     },
     fontControls: {
         position: 'absolute',
