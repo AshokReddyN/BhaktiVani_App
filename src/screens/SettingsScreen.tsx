@@ -165,13 +165,15 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     themeButtonLight: {
-        borderWidth: 2,
-        borderColor: '#F97316',
         backgroundColor: 'white',
+        borderWidth: 2,
+        borderColor: '#E5E7EB',
     },
     themeButtonSepia: {
         backgroundColor: '#F5F0E6',
         marginLeft: 16,
+        borderWidth: 2,
+        borderColor: '#E5E7EB',
     },
     themeButtonDark: {
         marginTop: 16,

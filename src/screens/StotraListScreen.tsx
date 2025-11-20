@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet } from 'react-native'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import { database } from '../database'
 import Stotra from '../database/models/Stotra'
@@ -13,24 +13,28 @@ const StotraListScreen = () => {
     const [stotras, setStotras] = useState<Stotra[]>([])
     // const [searchQuery, setSearchQuery] = useState('')
 
-    useEffect(() => {
-        const fetchStotras = async () => {
-            const collection = database.get<Stotra>('stotras')
-            const query = collection.query(Q.where('deity_id', deityId))
+    const fetchStotras = useCallback(async () => {
+        const collection = database.get<Stotra>('stotras')
+        const query = collection.query(Q.where('deity_id', deityId))
 
-            // Search functionality hidden for now
-            // if (searchQuery) {
-            //     query = collection.query(
-            //         Q.where('deity_id', deityId),
-            //         Q.where('title', Q.like(`%${searchQuery}%`))
-            //     )
-            // }
+        // Search functionality hidden for now
+        // if (searchQuery) {
+        //     query = collection.query(
+        //         Q.where('deity_id', deityId),
+        //         Q.where('title', Q.like(`%${searchQuery}%`))
+        //     )
+        // }
 
-            const data = await query.fetch()
-            setStotras(data)
-        }
-        fetchStotras()
+        const data = await query.fetch()
+        setStotras(data)
     }, [deityId])
+
+    // Refetch when screen comes into focus (when navigating back from detail screen)
+    useFocusEffect(
+        useCallback(() => {
+            fetchStotras()
+        }, [fetchStotras])
+    )
 
     useEffect(() => {
         navigation.setOptions({ headerShown: false })
