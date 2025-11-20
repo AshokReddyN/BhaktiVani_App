@@ -1,7 +1,8 @@
 import React from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { NavigationContainer } from '@react-navigation/native'
-import { TouchableOpacity, Text } from 'react-native'
+import { TouchableOpacity, View } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 
 import TestScreen from '../screens/TestScreen'
 import HomeScreen from '../screens/HomeScreen'
@@ -32,9 +33,14 @@ const AppNavigator = () => {
                         title: 'భక్తి వాణి',
                         headerTitleAlign: 'center',
                         headerRight: () => (
-                            <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={{ marginRight: 16 }}>
-                                <Text style={{ fontSize: 26 }}>⚙️</Text>
-                            </TouchableOpacity>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, marginRight: 16 }}>
+                                <TouchableOpacity onPress={() => navigation.navigate('Favorites')}>
+                                    <Ionicons name="heart" size={24} color="#F97316" />
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
+                                    <Ionicons name="settings" size={24} color="#333" />
+                                </TouchableOpacity>
+                            </View>
                         ),
                     })}
                 />
