@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useState, useCallback } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native'
+import { Ionicons } from '@expo/vector-icons'
 import { database } from '../database'
 import Stotra from '../database/models/Stotra'
 import { SettingsService, FontSize, Theme } from '../utils/settings'
@@ -41,9 +42,9 @@ const StotraDetailScreen = () => {
 
     const toggleFavorite = useCallback(async () => {
         if (!stotra || isToggling) return
-        
+
         setIsToggling(true)
-        
+
         // Optimistic update - update UI immediately
         const newFavoriteState = !isFavorite
         setIsFavorite(newFavoriteState)
@@ -73,14 +74,16 @@ const StotraDetailScreen = () => {
         navigation.setOptions({
             title: title,
             headerRight: () => (
-                <TouchableOpacity 
-                    onPress={toggleFavorite} 
+                <TouchableOpacity
+                    onPress={toggleFavorite}
                     disabled={isToggling}
                     style={styles.favoriteButton}
                 >
-                    <Text style={styles.favoriteIcon}>
-                        {isFavorite ? '★' : '☆'}
-                    </Text>
+                    <Ionicons
+                        name={isFavorite ? "heart" : "heart-outline"}
+                        size={24}
+                        color="#F97316"
+                    />
                 </TouchableOpacity>
             )
         })
@@ -145,10 +148,6 @@ const styles = StyleSheet.create({
     favoriteButton: {
         marginRight: 16,
         padding: 4,
-    },
-    favoriteIcon: {
-        fontSize: 24,
-        color: '#F97316',
     },
     fontControls: {
         position: 'absolute',

@@ -11,25 +11,26 @@ const StotraListScreen = () => {
     const route = useRoute()
     const { deityId, deityName } = route.params as { deityId: string, deityName: string }
     const [stotras, setStotras] = useState<Stotra[]>([])
-    const [searchQuery, setSearchQuery] = useState('')
+    // const [searchQuery, setSearchQuery] = useState('')
 
     useEffect(() => {
         const fetchStotras = async () => {
             const collection = database.get<Stotra>('stotras')
-            let query = collection.query(Q.where('deity_id', deityId))
+            const query = collection.query(Q.where('deity_id', deityId))
 
-            if (searchQuery) {
-                query = collection.query(
-                    Q.where('deity_id', deityId),
-                    Q.where('title', Q.like(`%${searchQuery}%`))
-                )
-            }
+            // Search functionality hidden for now
+            // if (searchQuery) {
+            //     query = collection.query(
+            //         Q.where('deity_id', deityId),
+            //         Q.where('title', Q.like(`%${searchQuery}%`))
+            //     )
+            // }
 
             const data = await query.fetch()
             setStotras(data)
         }
         fetchStotras()
-    }, [deityId, searchQuery])
+    }, [deityId])
 
     useEffect(() => {
         navigation.setOptions({ headerShown: false })
@@ -47,9 +48,9 @@ const StotraListScreen = () => {
                 <Text style={styles.stotraTitle}>{item.title}</Text>
             </View>
             <Ionicons
-                name={item.isFavorite ? "bookmark" : "bookmark-outline"}
+                name={item.isFavorite ? "heart" : "heart-outline"}
                 size={24}
-                color={item.isFavorite ? "#F59E0B" : "#D1D5DB"}
+                color={item.isFavorite ? "#F97316" : "#D1D5DB"}
             />
         </TouchableOpacity>
     )
@@ -57,10 +58,14 @@ const StotraListScreen = () => {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="#FFF" />
+                </TouchableOpacity>
                 <Text style={styles.headerTitle}>భక్తి వాణి</Text>
             </View>
             <View style={styles.content}>
-                <View style={styles.searchContainer}>
+                {/* Search feature hidden for now */}
+                {/* <View style={styles.searchContainer}>
                     <Ionicons name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
                     <TextInput
                         placeholder="మంత్రం కోసం వెతకండి"
@@ -69,7 +74,7 @@ const StotraListScreen = () => {
                         onChangeText={setSearchQuery}
                         placeholderTextColor="#9CA3AF"
                     />
-                </View>
+                </View> */}
                 <FlatList
                     data={stotras}
                     renderItem={renderItem}
@@ -91,7 +96,15 @@ const styles = StyleSheet.create({
         paddingTop: 50,
         paddingBottom: 16,
         paddingHorizontal: 16,
+        flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
+    },
+    backButton: {
+        position: 'absolute',
+        left: 16,
+        top: 50,
+        padding: 8,
     },
     headerTitle: {
         fontSize: 24,
