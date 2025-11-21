@@ -1,0 +1,6 @@
+export { seedVenkateswara } from './venkateswara'
+export { seedGanesha } from './ganesha'
+export { seedHanuman } from './hanuman'
+export { seedShiva } from './shiva'
+export { seedLakshmi } from './lakshmi'
+export { seedSaraswati } from './saraswati'
