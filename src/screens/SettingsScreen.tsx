@@ -1,17 +1,33 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
 import { SettingsService, FontSize, Theme } from '../utils/settings'
+import { Language, LanguageService } from '../services/languageService'
+import { SyncService } from '../services/syncService'
+import { getTranslations } from '../utils/translations'
 
 const SettingsScreen = () => {
+    const navigation = useNavigation()
     const [fontSize, setFontSize] = useState<FontSize>('medium')
     const [theme, setTheme] = useState<Theme>('light')
+    const [currentLanguage, setCurrentLanguage] = useState<Language>('telugu')
+    const [lastSyncTime, setLastSyncTime] = useState<number>(0)
+    const [isSyncing, setIsSyncing] = useState(false)
 
     useEffect(() => {
         const loadSettings = async () => {
             const loadedFontSize = await SettingsService.getFontSize()
             const loadedTheme = await SettingsService.getTheme()
+            const lang = await LanguageService.getCurrentLanguage()
+            const lastSync = await LanguageService.getLastSyncTimestamp()
             setFontSize(loadedFontSize)
             setTheme(loadedTheme)
+            setCurrentLanguage(lang || 'telugu')
+            setLastSyncTime(lastSync)
+
+            // Update screen title based on language
+            const t = getTranslations(lang || 'telugu')
+            navigation.setOptions({ title: t.settings })
         }
         loadSettings()
     }, [])
@@ -26,9 +42,142 @@ const SettingsScreen = () => {
         await SettingsService.setTheme(selectedTheme)
     }
 
+    const handleLanguageChange = async (language: Language) => {
+        setCurrentLanguage(language);
+        await LanguageService.setCurrentLanguage(language);
+
+        // Update screen title immediately
+        const t = getTranslations(language);
+        navigation.setOptions({ title: t.settings });
+
+        // Automatically sync content from Firebase for the new language
+        setIsSyncing(true);
+        try {
+            await SyncService.initialDownload(language, (progress) => {
+                console.log(`Language change sync progress: ${progress}%`);
+            });
+
+            const newSyncTime = await LanguageService.getLastSyncTimestamp();
+            setLastSyncTime(newSyncTime);
+
+            // Show success message
+            Alert.alert(
+                'Language Changed',
+                'Language has been updated and content synced from Firebase. The app will now display content in the selected language.',
+                [{ text: 'OK' }]
+            );
+        } catch (error) {
+            console.error('Language change sync failed:', error);
+            // Show message even if sync fails
+            Alert.alert(
+                'Language Changed',
+                'Language has been updated, but content sync failed. You can manually sync from the sync button.',
+                [{ text: 'OK' }]
+            );
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    const handleSync = async () => {
+        setIsSyncing(true);
+        try {
+            // Use initialDownload to get ALL content from Firebase (full re-sync)
+            // This ensures we get new deities and stotras
+            await SyncService.initialDownload(currentLanguage, (progress) => {
+                // Could show progress here if needed
+                console.log(`Sync progress: ${progress}%`);
+            });
+
+            const newSyncTime = await LanguageService.getLastSyncTimestamp();
+            setLastSyncTime(newSyncTime);
+
+            Alert.alert(
+                'Sync Complete',
+                'Successfully synced all content from Firebase. Please restart the app to see new deities.',
+                [{ text: 'OK' }]
+            );
+        } catch (error) {
+            console.error('Sync failed:', error);
+            Alert.alert(
+                'Sync Failed',
+                'Failed to sync content. Please check your internet connection and try again.',
+                [{ text: 'OK' }]
+            );
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    const formatLastSyncTime = (timestamp: number): string => {
+        if (timestamp === 0) return getTranslations(currentLanguage).never
+        const date = new Date(timestamp)
+        const now = new Date()
+        const diffMs = now.getTime() - date.getTime()
+        const diffMins = Math.floor(diffMs / 60000)
+
+        if (diffMins < 1) return 'Just now'
+        if (diffMins < 60) return `${diffMins} min ago`
+        if (diffMins < 1440) return `${Math.floor(diffMins / 60)} hr ago`
+        return date.toLocaleDateString()
+    }
+
+    const t = getTranslations(currentLanguage)
+
     return (
-        <View style={styles.container}>
-            <Text style={styles.sectionTitle}>అక్షర పరిమాణం (Font Size)</Text>
+        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+            {/* Language Section */}
+            <Text style={styles.sectionTitle}>{t.language}</Text>
+            <View style={styles.fontSizeContainer}>
+                <TouchableOpacity
+                    style={[
+                        styles.fontSizeButton,
+                        currentLanguage === 'telugu' && styles.fontSizeButtonActive
+                    ]}
+                    onPress={() => handleLanguageChange('telugu')}
+                >
+                    <Text style={[
+                        styles.fontSizeButtonText,
+                        currentLanguage === 'telugu' && styles.fontSizeButtonTextActive
+                    ]}>
+                        {t.telugu}
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[
+                        styles.fontSizeButton,
+                        currentLanguage === 'kannada' && styles.fontSizeButtonActive
+                    ]}
+                    onPress={() => handleLanguageChange('kannada')}
+                >
+                    <Text style={[
+                        styles.fontSizeButtonText,
+                        currentLanguage === 'kannada' && styles.fontSizeButtonTextActive
+                    ]}>
+                        {t.kannada}
+                    </Text>
+                </TouchableOpacity>
+            </View>
+
+            {/* Sync Section */}
+            <Text style={styles.sectionTitle}>{t.sync}</Text>
+            <TouchableOpacity
+                style={styles.syncButton}
+                onPress={handleSync}
+                disabled={isSyncing}
+            >
+                {isSyncing ? (
+                    <ActivityIndicator color="white" />
+                ) : (
+                    <Text style={styles.syncButtonText}>{t.syncContent}</Text>
+                )}
+            </TouchableOpacity>
+            <Text style={styles.lastSyncText}>
+                {t.lastSynced}: {formatLastSyncTime(lastSyncTime)}
+            </Text>
+
+            {/* Font Size Section */}
+            <Text style={styles.sectionTitle}>{t.fontSize}</Text>
             <View style={styles.fontSizeContainer}>
                 <TouchableOpacity
                     style={[
@@ -41,7 +190,7 @@ const SettingsScreen = () => {
                         styles.fontSizeButtonText,
                         fontSize === 'small' && styles.fontSizeButtonTextActive
                     ]}>
-                        చిన్న
+                        {t.small}
                     </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -55,7 +204,7 @@ const SettingsScreen = () => {
                         styles.fontSizeButtonText,
                         fontSize === 'medium' && styles.fontSizeButtonTextActive
                     ]}>
-                        మధ్యస్థం
+                        {t.medium}
                     </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -69,12 +218,12 @@ const SettingsScreen = () => {
                         styles.fontSizeButtonText,
                         fontSize === 'large' && styles.fontSizeButtonTextActive
                     ]}>
-                        పెద్ద
+                        {t.large}
                     </Text>
                 </TouchableOpacity>
             </View>
 
-            <Text style={styles.sectionTitle}>నేపథ్యం (Theme)</Text>
+            <Text style={styles.sectionTitle}>{t.theme}</Text>
             <View style={styles.themeRow}>
                 <TouchableOpacity
                     style={[
@@ -133,7 +282,7 @@ const SettingsScreen = () => {
                     </Text>
                 </View>
             </View>
-        </View>
+        </ScrollView>
     )
 }
 
@@ -141,6 +290,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'white',
+    },
+    contentContainer: {
         padding: 16,
     },
     sectionTitle: {
@@ -255,6 +406,26 @@ const styles = StyleSheet.create({
     previewText: {
         textAlign: 'center',
         fontWeight: '500',
+    },
+    syncButton: {
+        backgroundColor: '#F97316',
+        borderRadius: 12,
+        padding: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 12,
+        minHeight: 56,
+    },
+    syncButtonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    lastSyncText: {
+        fontSize: 14,
+        color: '#6B7280',
+        textAlign: 'center',
+        marginBottom: 32,
     },
 })
 

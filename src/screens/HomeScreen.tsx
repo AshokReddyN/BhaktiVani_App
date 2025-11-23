@@ -1,12 +1,30 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { database } from '../database'
 import Deity from '../database/models/Deity'
+import { LanguageService } from '../services/languageService'
 
 const HomeScreen = () => {
     const navigation = useNavigation()
     const [deities, setDeities] = useState<Deity[]>([])
+    const [currentLanguage, setCurrentLanguage] = useState<'telugu' | 'kannada'>('telugu')
+
+    // Load language preference when screen focuses
+    useFocusEffect(
+        React.useCallback(() => {
+            const loadDeitiesAndLanguage = async () => {
+                const deitiesCollection = database.get<Deity>('deities');
+                const allDeities = await deitiesCollection.query().fetch();
+                setDeities(allDeities);
+
+                // Also refresh current language in case it changed
+                const lang = await LanguageService.getCurrentLanguage();
+                setCurrentLanguage(lang || 'telugu');
+            };
+            loadDeitiesAndLanguage();
+        }, [])
+    )
 
     useEffect(() => {
         const fetchDeities = async () => {
@@ -17,30 +35,27 @@ const HomeScreen = () => {
     }, [])
 
     const renderItem = ({ item }: { item: Deity }) => {
-        let imageSource;
+        // Map deity image field to actual image files
+        const getDeityImage = (imageName: string) => {
+            const imageMap: { [key: string]: any } = {
+                'ganesha': require('../assets/ganesha.png'),
+                'venkateswara': require('../assets/venkateswara.png'),
+                'shiva': require('../assets/shiva.png'),
+                'vishnu': require('../assets/vishnu.png'),
+                'lakshmi': require('../assets/lakshmi.png'),
+                'hanuman': require('../assets/hanuman.png'),
+                'rama': require('../assets/rama.png'),
+                'krishna': require('../assets/krishna.png'),
+                'saraswati': require('../assets/saraswati.png'),
+            };
+            return imageMap[imageName] || null;
+        };
 
-        switch (item.name) {
-            case 'వెంకటేశ్వర స్వామి':
-                imageSource = require('../assets/venkateswara.png');
-                break;
-            case 'గణేశుడు':
-                imageSource = require('../assets/ganesha.png');
-                break;
-            case 'హనుమంతుడు':
-                imageSource = require('../assets/hanuman.png');
-                break;
-            case 'శివుడు':
-                imageSource = require('../assets/shiva.png');
-                break;
-            case 'లక్ష్మీదేవి':
-                imageSource = require('../assets/lakshmi.png');
-                break;
-            case 'సరస్వతీ దేవి':
-                imageSource = require('../assets/saraswati.png');
-                break;
-            default:
-                imageSource = null;
-        }
+        const deityName = currentLanguage === 'telugu'
+            ? (item.nameTelugu || item.name)
+            : (item.nameKannada || item.name);
+
+        const imageSource = getDeityImage(item.image);
 
         return (
             <TouchableOpacity
@@ -55,10 +70,10 @@ const HomeScreen = () => {
                             resizeMode="cover"
                         />
                     ) : (
-                        <Text style={styles.initial}>{item.name.charAt(0)}</Text>
+                        <Text style={styles.initial}>{deityName.charAt(0)}</Text>
                     )}
                 </View>
-                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.name}>{deityName}</Text>
             </TouchableOpacity>
         );
     }

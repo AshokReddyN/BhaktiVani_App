@@ -5,13 +5,13 @@ import { database } from '../../database'
 import { SettingsService } from '../../utils/settings'
 
 // Mock navigation
-const mockNavigate = jest.fn()
 const mockSetOptions = jest.fn()
+const mockAddListener = jest.fn()
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({
-    navigate: mockNavigate,
     setOptions: mockSetOptions,
+    addListener: mockAddListener,
   }),
   useRoute: () => ({
     params: {
@@ -19,7 +19,16 @@ jest.mock('@react-navigation/native', () => ({
       title: 'Test Stotra',
     },
   }),
-  useFocusEffect: jest.fn((callback) => callback()),
+  useFocusEffect: jest.fn((callback) => {
+    callback()
+  }),
+}))
+
+// Mock LanguageService
+jest.mock('../../services/languageService', () => ({
+  LanguageService: {
+    getCurrentLanguage: jest.fn().mockResolvedValue('telugu'),
+  },
 }))
 
 // Mock database
@@ -29,7 +38,11 @@ jest.mock('../../database', () => ({
       find: jest.fn(() => Promise.resolve({
         id: 'test-stotra-id',
         title: 'Test Stotra',
+        titleTelugu: 'Test Stotra',
+        titleKannada: 'Test Stotra KN',
         content: 'Test content',
+        textTelugu: 'Test content',
+        textKannada: 'Test content KN',
         isFavorite: false,
         update: jest.fn(),
       })),
@@ -67,7 +80,7 @@ describe('StotraDetailScreen', () => {
 
   it('should load stotra data', async () => {
     const { getByText } = render(<StotraDetailScreen />)
-    
+
     await waitFor(() => {
       expect(getByText('Test content')).toBeTruthy()
     })
@@ -75,7 +88,7 @@ describe('StotraDetailScreen', () => {
 
   it('should increase font size', async () => {
     const { getByText, getAllByText } = render(<StotraDetailScreen />)
-    
+
     await waitFor(() => {
       const plusButton = getByText('+')
       fireEvent.press(plusButton)
@@ -85,7 +98,7 @@ describe('StotraDetailScreen', () => {
 
   it('should decrease font size', async () => {
     const { getByText } = render(<StotraDetailScreen />)
-    
+
     await waitFor(() => {
       const minusButton = getByText('-')
       fireEvent.press(minusButton)
@@ -95,7 +108,7 @@ describe('StotraDetailScreen', () => {
 
   it('should load settings when screen focuses', async () => {
     render(<StotraDetailScreen />)
-    
+
     await waitFor(() => {
       expect(SettingsService.getFontSize).toHaveBeenCalled()
       expect(SettingsService.getTheme).toHaveBeenCalled()
@@ -104,7 +117,7 @@ describe('StotraDetailScreen', () => {
 
   it('should display stotra content', async () => {
     const { getByText } = render(<StotraDetailScreen />)
-    
+
     await waitFor(() => {
       expect(getByText('Test content')).toBeTruthy()
     })
@@ -112,7 +125,7 @@ describe('StotraDetailScreen', () => {
 
   it('should update header options with favorite button', async () => {
     render(<StotraDetailScreen />)
-    
+
     await waitFor(() => {
       expect(mockSetOptions).toHaveBeenCalled()
     })

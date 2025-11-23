@@ -10,6 +10,16 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({
     navigate: mockNavigate,
   }),
+  useFocusEffect: jest.fn((callback) => {
+    callback()
+  }),
+}))
+
+// Mock LanguageService
+jest.mock('../../services/languageService', () => ({
+  LanguageService: {
+    getCurrentLanguage: jest.fn().mockResolvedValue('telugu'),
+  },
 }))
 
 // Mock database
@@ -44,7 +54,7 @@ describe('HomeScreen', () => {
 
   it('should render home screen', async () => {
     const { getByText } = render(<HomeScreen />)
-    
+
     // Wait for data to load
     await waitFor(() => {
       expect(database.get).toHaveBeenCalled()
@@ -53,7 +63,7 @@ describe('HomeScreen', () => {
 
   it('should fetch deities on mount', async () => {
     render(<HomeScreen />)
-    
+
     await waitFor(() => {
       expect(database.get).toHaveBeenCalled()
     })
@@ -61,7 +71,7 @@ describe('HomeScreen', () => {
 
   it('should handle navigation to stotra list', async () => {
     const { getByText } = render(<HomeScreen />)
-    
+
     await waitFor(() => {
       // Assuming we can find a deity card and press it
       // This would require more specific mocking of the FlatList render

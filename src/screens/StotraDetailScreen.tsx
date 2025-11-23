@@ -5,17 +5,19 @@ import { Ionicons } from '@expo/vector-icons'
 import { database } from '../database'
 import Stotra from '../database/models/Stotra'
 import { SettingsService, FontSize, Theme } from '../utils/settings'
+import { Language, LanguageService } from '../services/languageService'
 
 const StotraDetailScreen = () => {
     const navigation = useNavigation()
     const route = useRoute()
-    const { stotraId, title } = route.params as { stotraId: string, title: string }
+    const { stotraId } = route.params as { stotraId: string }
     const [stotra, setStotra] = useState<Stotra | null>(null)
     const [isFavorite, setIsFavorite] = useState(false)
     const [fontSize, setFontSize] = useState(18)
     const [fontSizeSetting, setFontSizeSetting] = useState<FontSize>('medium')
     const [theme, setTheme] = useState<Theme>('light')
     const [isToggling, setIsToggling] = useState(false)
+    const [currentLanguage, setCurrentLanguage] = useState<Language>('telugu')
 
     // Load settings when screen focuses
     useFocusEffect(
@@ -23,12 +25,17 @@ const StotraDetailScreen = () => {
             const loadSettings = async () => {
                 const loadedFontSize = await SettingsService.getFontSize()
                 const loadedTheme = await SettingsService.getTheme()
+                const lang = await LanguageService.getCurrentLanguage()
                 setFontSizeSetting(loadedFontSize)
                 setTheme(loadedTheme)
                 setFontSize(SettingsService.getFontSizeValue(loadedFontSize))
+                setCurrentLanguage(lang || 'telugu')
+                // Re-fetch stotra to trigger re-render
+                const fetchedStotra = await database.get<Stotra>('stotras').find(stotraId)
+                setStotra(fetchedStotra)
             }
             loadSettings()
-        }, [])
+        }, [stotraId])
     )
 
     useEffect(() => {
@@ -71,8 +78,23 @@ const StotraDetailScreen = () => {
     }, [stotra, stotraId, isFavorite, isToggling])
 
     useLayoutEffect(() => {
+        // Get language-specific title with proper fallback
+        // Handle empty strings as well as null/undefined
+        let displayTitle = 'Loading...';
+        if (stotra) {
+            if (currentLanguage === 'telugu') {
+                displayTitle = (stotra.titleTelugu && stotra.titleTelugu.trim()) || stotra.title || 'Untitled';
+            } else {
+                // For Kannada, prefer Kannada title, fallback to Telugu if Kannada is empty, then to generic title
+                displayTitle = (stotra.titleKannada && stotra.titleKannada.trim())
+                    || (stotra.titleTelugu && stotra.titleTelugu.trim())
+                    || stotra.title
+                    || 'Untitled';
+            }
+        }
+
         navigation.setOptions({
-            title: title,
+            title: displayTitle,
             headerRight: () => (
                 <TouchableOpacity
                     onPress={toggleFavorite}
@@ -86,8 +108,8 @@ const StotraDetailScreen = () => {
                     />
                 </TouchableOpacity>
             )
-        })
-    }, [navigation, title, isFavorite, toggleFavorite, isToggling])
+        });
+    }, [navigation, isFavorite, toggleFavorite, isToggling, stotra, currentLanguage]);
 
     if (!stotra) return <View style={styles.loading}><Text>Loading...</Text></View>
 
@@ -104,7 +126,13 @@ const StotraDetailScreen = () => {
                         color: themeColors.text,
                     }
                 ]}>
-                    {stotra.content}
+                    {currentLanguage === 'telugu' 
+                        ? ((stotra.textTelugu && stotra.textTelugu.trim()) || stotra.content || 'Content not available')
+                        : ((stotra.textKannada && stotra.textKannada.trim()) 
+                            || (stotra.textTelugu && stotra.textTelugu.trim()) 
+                            || stotra.content 
+                            || 'Content not available')
+                    }
                 </Text>
             </ScrollView>
 

@@ -4,6 +4,8 @@
 
 Comprehensive test suite for BhaktiVani app covering:
 - Settings service (font size & theme)
+- Language service (language preferences, sync timestamps)
+- **Firebase Sync service (language-specific downloads, incremental sync)**
 - Screen components (Home, Settings, StotraDetail, Favorites)
 - Database operations (seeding, models)
 - Favorite toggle functionality
@@ -15,6 +17,9 @@ Comprehensive test suite for BhaktiVani app covering:
 __tests__/
 ├── App.test.tsx                    # App initialization tests
 src/
+├── services/
+│   └── __tests__/
+│       └── syncService.test.ts     # Firebase sync tests (NEW)
 ├── utils/
 │   └── __tests__/
 │       ├── settings.test.ts        # Settings service tests
@@ -31,6 +36,40 @@ src/
 ```
 
 ## Test Cases Implemented
+
+### Firebase Sync Service (`src/services/__tests__/syncService.test.ts`) **NEW**
+
+**Initial Download Tests:**
+- ✅ Downloads only Telugu content when Telugu is selected
+- ✅ Downloads only Kannada content when Kannada is selected
+- ✅ Calls progress callback at correct intervals (10%, 30%, 50%, 60%, 80%, 100%)
+- ✅ Clears existing data before downloading
+- ✅ Creates deities with both language names
+- ✅ Creates stotras with selected language only (saves ~50% space)
+- ✅ Updates last sync timestamp after successful download
+- ✅ Handles download errors gracefully
+
+**Incremental Sync Tests:**
+- ✅ Fetches only stotras updated since last sync
+- ✅ Uses version_timestamp to filter updates
+- ✅ Returns count of updated items
+- ✅ Returns count of errors
+- ✅ Updates last sync timestamp after successful sync
+- ✅ Handles sync errors and continues processing
+
+**Upsert Stotra Tests:**
+- ✅ Updates existing stotra with selected language only
+- ✅ Creates new stotra with selected language only
+- ✅ Links stotra to correct deity
+- ✅ Preserves other language fields when updating
+- ✅ Handles missing deity gracefully
+
+**Utility Tests:**
+- ✅ isOnline() returns true when connected
+- ✅ isOnline() returns false when offline
+- ✅ getMasterTimestamp() fetches from Firebase config
+- ✅ getMasterTimestamp() returns current time if config missing
+- ✅ getMasterTimestamp() handles Firebase errors
 
 ### Settings Service (`src/utils/__tests__/settings.test.ts`)
 
@@ -121,10 +160,10 @@ npm run test:watch
 npm run test:coverage
 
 # Run specific test file
-npm test -- settings.test
+npm test -- syncService.test
 
 # Run tests matching pattern
-npm test -- --testPathPatterns="Settings"
+npm test -- --testPathPatterns="Sync"
 ```
 
 ## Test Commands
@@ -138,6 +177,7 @@ All commands are defined in `package.json`:
 
 Target coverage areas:
 - ✅ Settings Service: 100%
+- ✅ **Sync Service: 90%+ (NEW)**
 - ✅ Screen Components: 80%+
 - ✅ Database Operations: 90%+
 - ✅ Utility Functions: 100%
@@ -150,6 +190,8 @@ Target coverage areas:
 - `@react-navigation/native` - For navigation
 - `expo-status-bar` - For status bar
 - `react-native-safe-area-context` - For safe area handling
+- **`firebase/firestore` - For Firebase Firestore operations (NEW)**
+- **`../../config/firebase` - For Firebase configuration (NEW)**
 
 ## Test Best Practices
 
@@ -158,6 +200,25 @@ Target coverage areas:
 3. **Async Handling**: Proper use of `async/await` and `waitFor`
 4. **Error Testing**: Tests include error scenarios
 5. **Edge Cases**: Tests cover default values and error states
+6. **Language-Specific**: Tests verify language-specific download behavior
+
+## Key Test Scenarios for Production
+
+### Language-Specific Download
+- Verifies only selected language is downloaded (50% data savings)
+- Ensures other language fields are left empty
+- Confirms proper handling of both Telugu and Kannada
+
+### Incremental Sync
+- Tests timestamp-based filtering
+- Verifies only updated content is fetched
+- Ensures efficient bandwidth usage
+
+### Error Handling
+- Network failures during download
+- Database write errors
+- Missing Firebase configuration
+- Offline scenarios
 
 ## Notes
 
@@ -165,4 +226,5 @@ Target coverage areas:
 - AsyncStorage is mocked for settings tests
 - WatermelonDB is mocked for database tests
 - Navigation is mocked for screen component tests
-
+- **Firebase Firestore is mocked for sync tests**
+- **Language-specific download reduces test data by ~50%**

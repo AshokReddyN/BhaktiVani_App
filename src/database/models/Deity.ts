@@ -9,6 +9,8 @@ export default class Deity extends Model {
     } as const
 
     @field('name') name!: string
+    @field('name_telugu') nameTelugu!: string
+    @field('name_kannada') nameKannada!: string
     @field('image') image!: string
 
     @children('stotras') stotras!: any // Type inference issue with decorators sometimes

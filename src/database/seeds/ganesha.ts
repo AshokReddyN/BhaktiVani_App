@@ -5,12 +5,12 @@ import Stotra from '../models/Stotra'
 export async function seedGanesha(database: Database) {
     const ganesha = await database.get<Deity>('deities').create(deity => {
         deity.name = 'గణేశుడు'
+        deity.nameTelugu = 'గణేశుడు'
+        deity.nameKannada = 'ಗಣೇಶ'
         deity.image = 'ganesha'
     })
 
-    await database.get<Stotra>('stotras').create(stotra => {
-        stotra.title = 'గణేశ పంచరత్నం'
-        stotra.content = `ముదాకరాత్త మోదకం సదా విముక్తి సాధకం
+    const teluguPancharatnam = `ముదాకరాత్త మోదకం సదా విముక్తి సాధకం
 కళాధరావతంసకం విలాసిలోక రక్షకమ్ |
 అనాయకైక నాయకం వినాశితేభ దైత్యకం
 నతాశుభాశు నాశకం నమామి తం వినాయకమ్ ||
@@ -34,6 +34,41 @@ export async function seedGanesha(database: Database) {
 అచింత్య రూపమంతహీన మంత్రమీశ మవ్యయమ్ |
 హృదంతరే నిరంతరం వసంతమేవ యోగినాం
 తమేకదంతమేవ తం వికల్ప మాశ్రయామహే ||`
+
+    const kannadaPancharatnam = `ಮುದಾಕರಾತ್ತ ಮೋದಕಂ ಸದಾ ವಿಮುಕ್ತಿ ಸಾಧಕಂ
+ಕಳಾಧರಾವತಂಸಕಂ ವಿಲಾಸಿಲೋಕ ರಕ್ಷಕಮ್ |
+ಅನಾಯಕೈಕ ನಾಯಕಂ ವಿನಾಶಿತೇಭ ದೈತ್ಯಕಂ
+ನತಾಶುಭಾಶು ನಾಶಕಂ ನಮಾಮಿ ತಂ ವಿನಾಯಕಮ್ ||
+
+ನತೇತರಾತಿ ಭೀಕರಂ ನವೋದಿತಾರ್ಕ ಭಾಸ್ವರಂ
+ನಮತ್ಸುರಾರಿ ನಿರ್ಜರಂ ನತಾಧಿಕಾಪದುದ್ಧರಮ್ |
+ಸುರೇಶ್ವರಂ ನಿಧೀಶ್ವರಂ ಗಜೇಶ್ವರಂ ಗಣೇಶ್ವರಂ
+ಮಹೇಶ್ವರಂ ತಮಾಶ್ರಯೇ ಪರಾತ್ಪರಂ ನಿರಂತರಮ್ ||
+
+ಸಮಸ್ತ ಲೋಕ ಶಂಕರಂ ನಿರಸ್ತ ದೈತ್ಯ ಕುಂಜರಂ
+ದರೇತರೋದರಂ ವರಂ ವರೇಭವಕ್ತ್ರ ಮಕ್ಷರಮ್ |
+ಕೃಪಾಕರಂ ಕ್ಷಮಾಕರಂ ಮುದಾಕರಂ ಯಶಸ್ಕರಂ
+ಮನಸ್ಕರಂ ನಮಸ್ಕೃತಾಂ ನಮಸ್ಕರೋಮಿ ಭಾಸ್ಕರಮ್ ||
+
+ಅಕಿಂಚನಾರ್ತಿ ಮಾರ್ಜನಂ ಚಿರಂತನೋಕ್ತಿ ಭಾಜನಂ
+ಪುರಾರಿ ಪೂರ್ವ ನಂದನಂ ಸುರಾರಿ ಗರ್ವ ಚರ್ವಣಮ್ |
+ಪ್ರಪಂಚ ನಾಶ ಭೀಷಣಂ ಧನಂಜಯಾದಿ ಭೂಷಣಂ
+ಕಪೋಲ ದಾನವಾರಣಂ ಭಜೇ ಪುರಾಣ ವಾರಣಮ್ ||
+
+ನಿತಾಂತ ಕಾಂತ ದಂತಕಾಂತಿ ಮಂತ ಕಾಂತ ಕಾತ್ಮಜಂ
+ಅಚಿಂತ್ಯ ರೂಪಮಂತಹೀನ ಮಂತ್ರಮೀಶ ಮವ್ಯಯಮ್ |
+ಹೃದಂತರೇ ನಿರಂತರಂ ವಸಂತಮೇವ ಯೋಗಿನಾಂ
+ತಮೇಕದಂತಮೇವ ತಂ ವಿಕಲ್ಪ ಮಾಶ್ರಯಾಮಹೇ ||`
+
+    await database.get<Stotra>('stotras').create(stotra => {
+        stotra.stotraId = 'ganesha_pancharatnam_001'
+        stotra.title = 'గణేశ పంచరత్నం'
+        stotra.content = teluguPancharatnam
+        stotra.titleTelugu = 'గణేశ పంచరత్నం'
+        stotra.textTelugu = teluguPancharatnam
+        stotra.titleKannada = 'ಗಣೇಶ ಪಂಚರತ್ನಂ'
+        stotra.textKannada = kannadaPancharatnam
+        stotra.versionTimestamp = Date.now()
         stotra.deity.set(ganesha)
         stotra.isFavorite = false
     })
@@ -797,8 +832,8 @@ export async function seedGanesha(database: Database) {
     })
 
     await database.get<Stotra>('stotras').create(stotra => {
-    stotra.title = 'శ్రీ గణేశ మంగళాశాసనం'
-    stotra.content = `
+        stotra.title = 'శ్రీ గణేశ మంగళాశాసనం'
+        stotra.content = `
 అథ శ్రీ గణేశ మంగళాశాసనం ॥
 
 వక్రతుండాయ హూమ్ న‌మః ।
@@ -836,13 +871,13 @@ export async function seedGanesha(database: Database) {
 
 ఇతి శ్రీ గణేశ మంగళాశాసనం ॥
 `
-    stotra.deity.set(ganesha)
-    stotra.isFavorite = false
-})
+        stotra.deity.set(ganesha)
+        stotra.isFavorite = false
+    })
 
-await database.get<Stotra>('stotras').create(stotra => {
-    stotra.title = 'శ్రీ గణపతి గాయత్రి మంత్రం'
-    stotra.content = `
+    await database.get<Stotra>('stotras').create(stotra => {
+        stotra.title = 'శ్రీ గణపతి గాయత్రి మంత్రం'
+        stotra.content = `
 అథ శ్రీ గణపతి గాయత్రి మంత్రం ॥
 
 ఓం ఏకదంతాయ విద్మహే ।
@@ -859,13 +894,13 @@ await database.get<Stotra>('stotras').create(stotra => {
 
 ఇతి శ్రీ గణపతి గాయత్రి మంత్రం ॥
 `
-    stotra.deity.set(ganesha)
-    stotra.isFavorite = false
-})
+        stotra.deity.set(ganesha)
+        stotra.isFavorite = false
+    })
 
-await database.get<Stotra>('stotras').create(stotra => {
-    stotra.title = 'శ్రీ హేరంభ గణపతి స్తోత్రం'
-    stotra.content = `
+    await database.get<Stotra>('stotras').create(stotra => {
+        stotra.title = 'శ్రీ హేరంభ గణపతి స్తోత్రం'
+        stotra.content = `
 అథ శ్రీ హేరంభ గణపతి స్తోత్రం ॥
 
 హేరంభం హరసూనుం హరగౌరిసుతం శుభం ।
@@ -885,13 +920,13 @@ await database.get<Stotra>('stotras').create(stotra => {
 
 ఇతి శ్రీ హేరంభ గణపతి స్తోత్రం ॥
 `
-    stotra.deity.set(ganesha)
-    stotra.isFavorite = false
-})
+        stotra.deity.set(ganesha)
+        stotra.isFavorite = false
+    })
 
-await database.get<Stotra>('stotras').create(stotra => {
-    stotra.title = 'శ్రీ విఘ్నేశ్వర అష్టకం'
-    stotra.content = `
+    await database.get<Stotra>('stotras').create(stotra => {
+        stotra.title = 'శ్రీ విఘ్నేశ్వర అష్టకం'
+        stotra.content = `
 అథ శ్రీ విఘ్నేశ్వర అష్టకం ॥
 
 వక్రతుండ మహాకాయ సూర్యకోటి సమప్రభ ।
@@ -928,13 +963,13 @@ await database.get<Stotra>('stotras').create(stotra => {
 
 ఇతి శ్రీ విఘ్నేశ్వర అష్టకం ॥
 `
-    stotra.deity.set(ganesha)
-    stotra.isFavorite = false
-})
+        stotra.deity.set(ganesha)
+        stotra.isFavorite = false
+    })
 
-await database.get<Stotra>('stotras').create(stotra => {
-    stotra.title = 'శ్రీ గణేశ ప్రహ్లాద కృత స్తోత్రం'
-    stotra.content = `
+    await database.get<Stotra>('stotras').create(stotra => {
+        stotra.title = 'శ్రీ గణేశ ప్రహ్లాద కృత స్తోత్రం'
+        stotra.content = `
 అథ శ్రీ గణేశ ప్రహ్లాద కృత స్తోత్రం ॥
 
 ప్రహ్లాద ఉవాచ ॥
@@ -959,12 +994,12 @@ await database.get<Stotra>('stotras').create(stotra => {
 
 ఇతి శ్రీ గణేశ ప్రహ్లాద కృత స్తోత్రం ॥
 `
-    stotra.deity.set(ganesha)
-    stotra.isFavorite = false
-})
-await database.get<Stotra>('stotras').create(stotra => {
-    stotra.title = 'శ్రీ సిద్ధివినాయక స్తోత్రం'
-    stotra.content = `
+        stotra.deity.set(ganesha)
+        stotra.isFavorite = false
+    })
+    await database.get<Stotra>('stotras').create(stotra => {
+        stotra.title = 'శ్రీ సిద్ధివినాయక స్తోత్రం'
+        stotra.content = `
 అథ శ్రీ సిద్ధివినాయక స్తోత్రం ॥
 
 ప్రణమ్య శిరసా దేవం గౌరీపుత్రం వినాయకమ్ ।
@@ -990,9 +1025,9 @@ await database.get<Stotra>('stotras').create(stotra => {
 
 ఇతి శ్రీ సిద్ధివినాయక స్తోత్రం ॥
 `
-    stotra.deity.set(ganesha)
-    stotra.isFavorite = false
-})
+        stotra.deity.set(ganesha)
+        stotra.isFavorite = false
+    })
 
 
 }
