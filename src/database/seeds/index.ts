@@ -1,6 +1,3 @@
-export { seedVenkateswara } from './venkateswara'
-export { seedGanesha } from './ganesha'
-export { seedHanuman } from './hanuman'
-export { seedShiva } from './shiva'
-export { seedLakshmi } from './lakshmi'
-export { seedSaraswati } from './saraswati'
+// Seed files removed - all data comes from Firebase
+// This file exists to prevent import errors
+export { }

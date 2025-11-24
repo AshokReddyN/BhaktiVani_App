@@ -14,13 +14,29 @@ const HomeScreen = () => {
     useFocusEffect(
         React.useCallback(() => {
             const loadDeitiesAndLanguage = async () => {
-                const deitiesCollection = database.get<Deity>('deities');
-                const allDeities = await deitiesCollection.query().fetch();
-                setDeities(allDeities);
+                try {
+                    const deitiesCollection = database.get<Deity>('deities');
+                    const allDeities = await deitiesCollection.query().fetch();
+                    console.log(`HomeScreen: Loaded ${allDeities.length} deities`);
+                    setDeities(allDeities);
 
-                // Also refresh current language in case it changed
-                const lang = await LanguageService.getCurrentLanguage();
-                setCurrentLanguage(lang || 'telugu');
+                    // If no deities found, try to seed database
+                    if (allDeities.length === 0) {
+                        console.log('HomeScreen: No deities found, attempting to seed database...');
+                        const { seedDatabase } = require('../database/seed');
+                        await seedDatabase();
+                        // Re-fetch after seeding
+                        const refreshedDeities = await deitiesCollection.query().fetch();
+                        console.log(`HomeScreen: After seeding, found ${refreshedDeities.length} deities`);
+                        setDeities(refreshedDeities);
+                    }
+
+                    // Also refresh current language in case it changed
+                    const lang = await LanguageService.getCurrentLanguage();
+                    setCurrentLanguage(lang || 'telugu');
+                } catch (error) {
+                    console.error('HomeScreen: Error loading deities:', error);
+                }
             };
             loadDeitiesAndLanguage();
         }, [])
@@ -28,10 +44,25 @@ const HomeScreen = () => {
 
     useEffect(() => {
         const fetchDeities = async () => {
-            const data = await database.get<Deity>('deities').query().fetch()
-            setDeities(data)
-        }
-        fetchDeities()
+            try {
+                const data = await database.get<Deity>('deities').query().fetch();
+                console.log(`HomeScreen: Initial load - ${data.length} deities`);
+                setDeities(data);
+                
+                // If no data, try seeding
+                if (data.length === 0) {
+                    console.log('HomeScreen: No deities on initial load, seeding...');
+                    const { seedDatabase } = require('../database/seed');
+                    await seedDatabase();
+                    const refreshed = await database.get<Deity>('deities').query().fetch();
+                    console.log(`HomeScreen: After seeding - ${refreshed.length} deities`);
+                    setDeities(refreshed);
+                }
+            } catch (error) {
+                console.error('HomeScreen: Error in useEffect:', error);
+            }
+        };
+        fetchDeities();
     }, [])
 
     const renderItem = ({ item }: { item: Deity }) => {

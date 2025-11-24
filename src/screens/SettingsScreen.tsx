@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native'
 import { SettingsService, FontSize, Theme } from '../utils/settings'
 import { Language, LanguageService } from '../services/languageService'
 import { SyncService } from '../services/syncService'
+import { CacheService } from '../services/cacheService'
 import { getTranslations } from '../utils/translations'
 
 const SettingsScreen = () => {
@@ -43,69 +44,123 @@ const SettingsScreen = () => {
     }
 
     const handleLanguageChange = async (language: Language) => {
-        setCurrentLanguage(language);
-        await LanguageService.setCurrentLanguage(language);
+        // Show confirmation dialog before changing language
+        Alert.alert(
+            'Change Language',
+            `This will download all content for ${language === 'telugu' ? 'Telugu' : 'Kannada'}. Continue?`,
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Continue',
+                    onPress: async () => {
+                        setCurrentLanguage(language);
+                        await LanguageService.setCurrentLanguage(language);
 
-        // Update screen title immediately
-        const t = getTranslations(language);
-        navigation.setOptions({ title: t.settings });
+                        // Update screen title immediately
+                        const t = getTranslations(language);
+                        navigation.setOptions({ title: t.settings });
 
-        // Automatically sync content from Firebase for the new language
-        setIsSyncing(true);
-        try {
-            await SyncService.initialDownload(language, (progress) => {
-                console.log(`Language change sync progress: ${progress}%`);
-            });
+                        // Clear cache for old language
+                        await CacheService.clearCache();
 
-            const newSyncTime = await LanguageService.getLastSyncTimestamp();
-            setLastSyncTime(newSyncTime);
+                        // Automatically sync content from Firebase for the new language
+                        setIsSyncing(true);
+                        try {
+                            await SyncService.initialDownload(language, (progress) => {
+                                console.log(`Language change sync progress: ${progress}%`);
+                            });
 
-            // Show success message
-            Alert.alert(
-                'Language Changed',
-                'Language has been updated and content synced from Firebase. The app will now display content in the selected language.',
-                [{ text: 'OK' }]
-            );
-        } catch (error) {
-            console.error('Language change sync failed:', error);
-            // Show message even if sync fails
-            Alert.alert(
-                'Language Changed',
-                'Language has been updated, but content sync failed. You can manually sync from the sync button.',
-                [{ text: 'OK' }]
-            );
-        } finally {
-            setIsSyncing(false);
-        }
+                            const newSyncTime = await LanguageService.getLastSyncTimestamp();
+                            setLastSyncTime(newSyncTime);
+
+                            // Get sync stats for success message
+                            const stats = await LanguageService.getSyncStats();
+
+                            // Show success message with stats
+                            Alert.alert(
+                                'Language Changed',
+                                `Successfully downloaded ${stats.deityCount} deities and ${stats.stotraCount} stotras in ${language === 'telugu' ? 'Telugu' : 'Kannada'}.`,
+                                [{ text: 'OK' }]
+                            );
+                        } catch (error) {
+                            console.error('Language change sync failed:', error);
+                            Alert.alert(
+                                'Language Changed',
+                                'Language has been updated, but content sync failed. You can manually sync from the sync button.',
+                                [{ text: 'OK' }]
+                            );
+                        } finally {
+                            setIsSyncing(false);
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     const handleSync = async () => {
         setIsSyncing(true);
         try {
-            // Use initialDownload to get ALL content from Firebase (full re-sync)
-            // This ensures we get new deities and stotras
-            await SyncService.initialDownload(currentLanguage, (progress) => {
-                // Could show progress here if needed
-                console.log(`Sync progress: ${progress}%`);
-            });
+            // First, check if updates are available
+            const { hasUpdates, updateCount } = await SyncService.checkForUpdates();
 
-            const newSyncTime = await LanguageService.getLastSyncTimestamp();
-            setLastSyncTime(newSyncTime);
+            if (!hasUpdates) {
+                setIsSyncing(false);
+                Alert.alert(
+                    'Up to Date',
+                    "You're already up to date! No new content available.",
+                    [{ text: 'OK' }]
+                );
+                return;
+            }
 
+            // Show confirmation with update count
+            setIsSyncing(false);
             Alert.alert(
-                'Sync Complete',
-                'Successfully synced all content from Firebase. Please restart the app to see new deities.',
-                [{ text: 'OK' }]
+                'Updates Available',
+                `${updateCount} new ${updateCount === 1 ? 'stotra' : 'stotras'} available. Download now?`,
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                        text: 'Download',
+                        onPress: async () => {
+                            setIsSyncing(true);
+                            try {
+                                // Download only new/updated content
+                                const result = await SyncService.syncNewContent((progress) => {
+                                    console.log(`Sync progress: ${progress}%`);
+                                });
+
+                                const newSyncTime = await LanguageService.getLastSyncTimestamp();
+                                setLastSyncTime(newSyncTime);
+
+                                Alert.alert(
+                                    'Sync Complete',
+                                    `Successfully synced ${result.updated} new ${result.updated === 1 ? 'stotra' : 'stotras'}.`,
+                                    [{ text: 'OK' }]
+                                );
+                            } catch (error) {
+                                console.error('Sync failed:', error);
+                                Alert.alert(
+                                    'Sync Failed',
+                                    'Failed to sync content. Please check your internet connection and try again.',
+                                    [{ text: 'OK' }]
+                                );
+                            } finally {
+                                setIsSyncing(false);
+                            }
+                        }
+                    }
+                ]
             );
         } catch (error) {
-            console.error('Sync failed:', error);
+            console.error('Update check failed:', error);
+            setIsSyncing(false);
             Alert.alert(
-                'Sync Failed',
-                'Failed to sync content. Please check your internet connection and try again.',
+                'Check Failed',
+                'Failed to check for updates. Please check your internet connection and try again.',
                 [{ text: 'OK' }]
             );
-        } finally {
-            setIsSyncing(false);
         }
     };
 

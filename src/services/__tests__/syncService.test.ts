@@ -345,4 +345,62 @@ describe('SyncService', () => {
             expect(result).toBeGreaterThan(0);
         });
     });
+
+    describe('checkForUpdates', () => {
+        it('should return true when updates are available', async () => {
+            (LanguageService.getCurrentLanguage as jest.Mock).mockResolvedValue('telugu');
+            (LanguageService.getContentVersion as jest.Mock).mockResolvedValue(1700000000000);
+            (LanguageService.getLastSyncTimestamp as jest.Mock).mockResolvedValue(1700000000000);
+
+            const mockUpdatedStotras = [
+                { stotra_id: 'new_001', title_telugu: 'New', version_timestamp: 1700000001000 },
+                { stotra_id: 'new_002', title_telugu: 'New 2', version_timestamp: 1700000002000 },
+            ];
+
+            (query as jest.Mock).mockReturnValue({});
+            (getDocs as jest.Mock).mockResolvedValue({
+                docs: mockUpdatedStotras.map(s => ({ data: () => s }))
+            });
+
+            const result = await SyncService.checkForUpdates();
+
+            expect(result.hasUpdates).toBe(true);
+            expect(result.updateCount).toBe(2);
+        });
+
+        it('should return false when no updates are available', async () => {
+            (LanguageService.getCurrentLanguage as jest.Mock).mockResolvedValue('telugu');
+            (LanguageService.getContentVersion as jest.Mock).mockResolvedValue(1700000000000);
+            (LanguageService.getLastSyncTimestamp as jest.Mock).mockResolvedValue(1700000000000);
+
+            (query as jest.Mock).mockReturnValue({});
+            (getDocs as jest.Mock).mockResolvedValue({
+                docs: []
+            });
+
+            const result = await SyncService.checkForUpdates();
+
+            expect(result.hasUpdates).toBe(false);
+            expect(result.updateCount).toBe(0);
+        });
+
+        it('should return false when no language is set', async () => {
+            (LanguageService.getCurrentLanguage as jest.Mock).mockResolvedValue(null);
+
+            const result = await SyncService.checkForUpdates();
+
+            expect(result.hasUpdates).toBe(false);
+            expect(result.updateCount).toBe(0);
+        });
+
+        it('should handle errors gracefully', async () => {
+            (LanguageService.getCurrentLanguage as jest.Mock).mockResolvedValue('telugu');
+            (getDocs as jest.Mock).mockRejectedValue(new Error('Network error'));
+
+            const result = await SyncService.checkForUpdates();
+
+            expect(result.hasUpdates).toBe(false);
+            expect(result.updateCount).toBe(0);
+        });
+    });
 });

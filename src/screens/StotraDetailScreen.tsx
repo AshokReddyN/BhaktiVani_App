@@ -64,6 +64,10 @@ const StotraDetailScreen = () => {
                 })
             })
 
+            // Update persistent cache
+            const { CacheService } = require('../services/cacheService');
+            await CacheService.updateStotraFavorite(stotraId, newFavoriteState);
+
             // Refetch to ensure sync with database
             const updated = await database.get<Stotra>('stotras').find(stotraId)
             setStotra(updated)
@@ -126,11 +130,11 @@ const StotraDetailScreen = () => {
                         color: themeColors.text,
                     }
                 ]}>
-                    {currentLanguage === 'telugu' 
+                    {currentLanguage === 'telugu'
                         ? ((stotra.textTelugu && stotra.textTelugu.trim()) || stotra.content || 'Content not available')
-                        : ((stotra.textKannada && stotra.textKannada.trim()) 
-                            || (stotra.textTelugu && stotra.textTelugu.trim()) 
-                            || stotra.content 
+                        : ((stotra.textKannada && stotra.textKannada.trim())
+                            || (stotra.textTelugu && stotra.textTelugu.trim())
+                            || stotra.content
                             || 'Content not available')
                     }
                 </Text>

@@ -5,6 +5,7 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { seedDatabase } from './src/database/seed';
 import { LanguageService } from './src/services/languageService';
 import { migrateExistingData } from './src/database/dataMigration';
+import { database } from './src/database';
 import LanguageSelectionScreen from './src/screens/LanguageSelectionScreen';
 
 export default function App() {
@@ -14,34 +15,35 @@ export default function App() {
     useEffect(() => {
         const init = async () => {
             try {
-                // Seed database with initial data
-                await seedDatabase();
+                console.log('App: Starting initialization...');
 
-                // Run data migration to populate new language fields
-                // This is safe to run multiple times (idempotent)
+                // Ensure database is initialized and ready
+                // The database is already initialized via the import, but we can verify it's working
+                try {
+                    const deityCount = await database.get('deities').query().fetchCount();
+                    const stotraCount = await database.get('stotras').query().fetchCount();
+                    console.log(`App: Database ready - ${deityCount} deities, ${stotraCount} stotras`);
+                } catch (dbError) {
+                    console.error('App: Database initialization check failed:', dbError);
+                    // Continue anyway - database might be empty on first launch
+                }
+
+                // Run migration to ensure schema is up to date
                 await migrateExistingData();
 
                 // Check if initial setup is complete
                 const setupComplete = await LanguageService.isInitialSetupComplete();
-                
+                console.log(`App: Setup complete: ${setupComplete}`);
+
                 // Show language selection screen if setup is not complete
                 setNeedsLanguageSelection(!setupComplete);
             } catch (e) {
-                console.error("Initialization failed:", e);
-                // If initialization fails, check if we have a language set
-                // If not, show language selection screen
-                try {
-                    const currentLang = await LanguageService.getCurrentLanguage();
-                    const setupComplete = await LanguageService.isInitialSetupComplete();
-                    // Only show language selection if no language is set and setup is not complete
-                    setNeedsLanguageSelection(!setupComplete && !currentLang);
-                } catch (err) {
-                    console.error("Error checking language:", err);
-                    // On error, show language selection as fallback
-                    setNeedsLanguageSelection(true);
-                }
+                console.error("App: Initialization failed:", e);
+                // On error, show language selection as fallback
+                setNeedsLanguageSelection(true);
             } finally {
                 setIsReady(true);
+                console.log('App: Initialization complete');
             }
         };
         init();

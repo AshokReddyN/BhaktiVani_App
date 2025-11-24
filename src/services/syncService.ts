@@ -4,6 +4,7 @@ import { database } from '../database';
 import Deity from '../database/models/Deity';
 import Stotra from '../database/models/Stotra';
 import { LanguageService, Language } from './languageService';
+import { CacheService } from './cacheService';
 
 export interface StotraData {
     stotra_id: string;
@@ -34,8 +35,30 @@ export const SyncService = {
      */
     async initialDownload(language: Language, onProgress?: (progress: number) => void): Promise<void> {
         try {
-            console.log(`Starting initial download from Firebase for ${language}...`);
+            console.log(`Starting initial download for ${language}...`);
 
+            // 1. Check if we have valid cache for this language
+            const isCacheValid = await CacheService.isCacheValidForLanguage(language);
+
+            if (isCacheValid) {
+                console.log('Valid cache found - loading from local storage');
+                if (onProgress) onProgress(10);
+
+                const cachedData = await CacheService.loadFromCache();
+                if (cachedData) {
+                    if (onProgress) onProgress(50);
+
+                    // Restore cache to database
+                    await CacheService.restoreCacheToDatabase(cachedData);
+
+                    if (onProgress) onProgress(100);
+                    console.log('Loaded data from cache successfully');
+                    return;
+                }
+            }
+
+            // 2. If no cache or invalid, download from Firebase
+            console.log('No valid cache - downloading from Firebase');
             if (onProgress) onProgress(10);
 
             // Fetch all deities from Firestore
@@ -117,14 +140,138 @@ export const SyncService = {
                 }
             });
 
+            // 3. Save downloaded data to cache for next time
+            const allDeities = await database.get<Deity>('deities').query().fetch();
+            const allStotras = await database.get<Stotra>('stotras').query().fetch();
+            await CacheService.saveToCache(allDeities, allStotras, language);
+
             if (onProgress) onProgress(100);
 
-            // Update last sync timestamp
+            // Update last sync timestamp and sync stats
             await LanguageService.setLastSyncTimestamp(Date.now());
+            await LanguageService.setSyncStats(deitiesData.length, stotrasData.length);
+            await LanguageService.setContentVersion(language, Date.now());
 
             console.log(`Initial download complete for ${language}`);
         } catch (error) {
             console.error('Initial download failed:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Initial download with detailed progress (current/total items)
+     * Provides more granular progress updates for better UX
+     */
+    async initialDownloadWithDetails(
+        language: Language,
+        onProgress?: (current: number, total: number, type: 'deities' | 'stotras') => void
+    ): Promise<void> {
+        try {
+            console.log(`Starting detailed download for ${language}...`);
+
+            // Check cache first
+            const isCacheValid = await CacheService.isCacheValidForLanguage(language);
+            if (isCacheValid) {
+                const cachedData = await CacheService.loadFromCache();
+                if (cachedData) {
+                    await CacheService.restoreCacheToDatabase(cachedData);
+                    if (onProgress) {
+                        onProgress(cachedData.deities.length, cachedData.deities.length, 'deities');
+                        onProgress(cachedData.stotras.length, cachedData.stotras.length, 'stotras');
+                    }
+                    console.log('Loaded data from cache successfully');
+                    return;
+                }
+            }
+
+            // Download from Firebase
+            const deitiesSnapshot = await getDocs(collection(db, 'deities'));
+            const deitiesData = deitiesSnapshot.docs.map(doc => doc.data() as DeityData);
+            console.log(`Fetched ${deitiesData.length} deities from Firebase`);
+
+            const stotrasSnapshot = await getDocs(collection(db, 'stotras'));
+            const stotrasData = stotrasSnapshot.docs.map(doc => doc.data() as StotraData);
+            console.log(`Fetched ${stotrasData.length} stotras from Firebase`);
+
+            // Save to local database with detailed progress
+            await database.write(async () => {
+                // Clear existing data
+                const existingDeities = await database.get<Deity>('deities').query().fetch();
+                const existingStotras = await database.get<Stotra>('stotras').query().fetch();
+
+                for (const deity of existingDeities) {
+                    await deity.markAsDeleted();
+                }
+                for (const stotra of existingStotras) {
+                    await stotra.markAsDeleted();
+                }
+
+                // Insert deities with progress
+                const deityMap = new Map<string, Deity>();
+                for (let i = 0; i < deitiesData.length; i++) {
+                    const deityData = deitiesData[i];
+                    const deity = await database.get<Deity>('deities').create(d => {
+                        d.name = language === 'telugu' ? deityData.name_telugu : deityData.name_kannada;
+                        d.nameTelugu = deityData.name_telugu;
+                        d.nameKannada = deityData.name_kannada;
+                        d.image = deityData.image;
+                    });
+                    deityMap.set(deityData.deity_id, deity);
+
+                    if (onProgress) {
+                        onProgress(i + 1, deitiesData.length, 'deities');
+                    }
+                }
+
+                // Insert stotras with progress
+                for (let i = 0; i < stotrasData.length; i++) {
+                    const stotraData = stotrasData[i];
+                    const deity = deityMap.get(stotraData.deity_id);
+
+                    if (deity) {
+                        await database.get<Stotra>('stotras').create(stotra => {
+                            stotra.stotraId = stotraData.stotra_id;
+
+                            if (language === 'telugu') {
+                                stotra.title = stotraData.title_telugu;
+                                stotra.content = stotraData.text_telugu;
+                                stotra.titleTelugu = stotraData.title_telugu;
+                                stotra.textTelugu = stotraData.text_telugu;
+                                stotra.titleKannada = '';
+                                stotra.textKannada = '';
+                            } else {
+                                stotra.title = stotraData.title_kannada;
+                                stotra.content = stotraData.text_kannada;
+                                stotra.titleKannada = stotraData.title_kannada;
+                                stotra.textKannada = stotraData.text_kannada;
+                                stotra.titleTelugu = '';
+                                stotra.textTelugu = '';
+                            }
+
+                            stotra.versionTimestamp = stotraData.version_timestamp || Date.now();
+                            stotra.isFavorite = false;
+                            stotra.deity.set(deity);
+                        });
+                    }
+
+                    if (onProgress) {
+                        onProgress(i + 1, stotrasData.length, 'stotras');
+                    }
+                }
+            });
+
+            // Save to cache and update stats
+            const allDeities = await database.get<Deity>('deities').query().fetch();
+            const allStotras = await database.get<Stotra>('stotras').query().fetch();
+            await CacheService.saveToCache(allDeities, allStotras, language);
+            await LanguageService.setLastSyncTimestamp(Date.now());
+            await LanguageService.setSyncStats(deitiesData.length, stotrasData.length);
+            await LanguageService.setContentVersion(language, Date.now());
+
+            console.log(`Detailed download complete for ${language}`);
+        } catch (error) {
+            console.error('Detailed download failed:', error);
             throw error;
         }
     },
@@ -272,6 +419,36 @@ export const SyncService = {
         } catch (error) {
             console.error('Error fetching master timestamp:', error);
             return Date.now();
+        }
+    },
+
+    /**
+     * Check if updates are available without downloading
+     * Compares local content version with Firebase master timestamp
+     */
+    async checkForUpdates(): Promise<{ hasUpdates: boolean; updateCount: number }> {
+        try {
+            const currentLanguage = await LanguageService.getCurrentLanguage();
+            if (!currentLanguage) {
+                return { hasUpdates: false, updateCount: 0 };
+            }
+
+            const localVersion = await LanguageService.getContentVersion(currentLanguage);
+            const lastSync = await LanguageService.getLastSyncTimestamp();
+
+            // Query stotras updated since last sync
+            const stotrasRef = collection(db, 'stotras');
+            const q = query(stotrasRef, where('version_timestamp', '>', lastSync));
+            const snapshot = await getDocs(q);
+
+            const updateCount = snapshot.docs.length;
+            const hasUpdates = updateCount > 0;
+
+            console.log(`Update check: ${updateCount} updates available`);
+            return { hasUpdates, updateCount };
+        } catch (error) {
+            console.error('Error checking for updates:', error);
+            return { hasUpdates: false, updateCount: 0 };
         }
     },
 };

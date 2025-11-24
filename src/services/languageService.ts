@@ -6,6 +6,8 @@ const KEYS = {
     CURRENT_LANGUAGE: '@bhaktivani:currentLanguage',
     LAST_SYNC_TIMESTAMP: '@bhaktivani:lastSyncTimestamp',
     INITIAL_SETUP_COMPLETE: '@bhaktivani:initialSetupComplete',
+    CONTENT_VERSION_PREFIX: '@bhaktivani:contentVersion:',
+    SYNC_STATS: '@bhaktivani:syncStats',
 } as const
 
 export const LanguageService = {
@@ -93,6 +95,64 @@ export const LanguageService = {
             ])
         } catch (error) {
             console.error('Error resetting language settings:', error)
+        }
+    },
+
+    /**
+     * Get content version for a specific language
+     */
+    async getContentVersion(language: Language): Promise<number> {
+        try {
+            const key = `${KEYS.CONTENT_VERSION_PREFIX}${language}`
+            const value = await AsyncStorage.getItem(key)
+            return value ? parseInt(value, 10) : 0
+        } catch (error) {
+            console.error('Error getting content version:', error)
+            return 0
+        }
+    },
+
+    /**
+     * Set content version for a specific language
+     */
+    async setContentVersion(language: Language, version: number): Promise<void> {
+        try {
+            const key = `${KEYS.CONTENT_VERSION_PREFIX}${language}`
+            await AsyncStorage.setItem(key, version.toString())
+        } catch (error) {
+            console.error('Error setting content version:', error)
+        }
+    },
+
+    /**
+     * Get sync statistics (deity count, stotra count, last sync time)
+     */
+    async getSyncStats(): Promise<{ deityCount: number; stotraCount: number; lastSync: number }> {
+        try {
+            const value = await AsyncStorage.getItem(KEYS.SYNC_STATS)
+            if (value) {
+                return JSON.parse(value)
+            }
+            return { deityCount: 0, stotraCount: 0, lastSync: 0 }
+        } catch (error) {
+            console.error('Error getting sync stats:', error)
+            return { deityCount: 0, stotraCount: 0, lastSync: 0 }
+        }
+    },
+
+    /**
+     * Set sync statistics after successful sync
+     */
+    async setSyncStats(deityCount: number, stotraCount: number): Promise<void> {
+        try {
+            const stats = {
+                deityCount,
+                stotraCount,
+                lastSync: Date.now(),
+            }
+            await AsyncStorage.setItem(KEYS.SYNC_STATS, JSON.stringify(stats))
+        } catch (error) {
+            console.error('Error setting sync stats:', error)
         }
     },
 }
