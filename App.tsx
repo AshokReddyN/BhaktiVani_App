@@ -15,14 +15,14 @@ export default function App() {
     useEffect(() => {
         const init = async () => {
             try {
-                console.log('App: Starting initialization...');
+                if (__DEV__) console.log('App: Starting initialization...');
 
                 // Ensure database is initialized and ready
                 // The database is already initialized via the import, but we can verify it's working
                 try {
                     const deityCount = await database.get('deities').query().fetchCount();
                     const stotraCount = await database.get('stotras').query().fetchCount();
-                    console.log(`App: Database ready - ${deityCount} deities, ${stotraCount} stotras`);
+                    if (__DEV__) console.log(`App: Database ready - ${deityCount} deities, ${stotraCount} stotras`);
                 } catch (dbError) {
                     console.error('App: Database initialization check failed:', dbError);
                     // Continue anyway - database might be empty on first launch
@@ -33,7 +33,7 @@ export default function App() {
 
                 // Check if initial setup is complete
                 const setupComplete = await LanguageService.isInitialSetupComplete();
-                console.log(`App: Setup complete: ${setupComplete}`);
+                if (__DEV__) console.log(`App: Setup complete: ${setupComplete}`);
 
                 // Show language selection screen if setup is not complete
                 setNeedsLanguageSelection(!setupComplete);
@@ -43,7 +43,7 @@ export default function App() {
                 setNeedsLanguageSelection(true);
             } finally {
                 setIsReady(true);
-                console.log('App: Initialization complete');
+                if (__DEV__) console.log('App: Initialization complete');
             }
         };
         init();
