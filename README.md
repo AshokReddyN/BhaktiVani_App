@@ -15,7 +15,9 @@ A beautiful offline-first Telugu devotional app built with React Native (Expo) f
 
 - **Framework**: React Native (Expo SDK 54)
 - **Language**: TypeScript
-- **Database**: WatermelonDB with LokiJS adapter
+- **Database**: WatermelonDB with SQLite adapter (production-ready persistence)
+- **Backend**: Firebase (Firestore for data, Storage for assets)
+- **Cache**: AsyncStorage for offline-first caching
 - **Navigation**: React Navigation (Native Stack)
 - **Styling**: React Native StyleSheet
 
@@ -101,10 +103,74 @@ The app currently includes stotras for:
 
 ## Development Notes
 
-- The app uses LokiJS adapter for WatermelonDB to work with Expo Go
-- For production builds with persistent SQLite, consider using a custom development client
-- Database is seeded only once on first launch
-- All UI text is in Telugu (తెలుగు)
+### Offline-First Architecture
+- The app uses SQLite adapter for WatermelonDB to ensure data persists across app restarts and device reboots
+- Firebase is the single source of truth for content updates
+- On first launch, users select a language (Telugu or Kannada) and download all content
+- On subsequent launches, the app loads directly from local database (no Firebase calls)
+- Language can be changed in Settings, which triggers a fresh download of the new language content
+- Manual sync checks for updates and downloads only new/changed content
+
+### Data Flow
+1. **First Launch**: Language selection → Download from Firebase → Save to SQLite → Cache in AsyncStorage
+2. **Subsequent Launches**: Load from SQLite (instant, offline-capable)
+3. **Language Change**: Clear cache → Download new language → Update SQLite → Update cache
+4. **Manual Sync**: Check for updates → Download only new items → Update SQLite → Update cache
+
+### Database Persistence
+- Uses SQLite adapter (not LokiJS) for production-ready persistence
+- Data persists across app restarts and device reboots
+- Favorites and settings are preserved
+- Database is automatically backed up by AsyncStorage cache
+
+### SQLite Adapter & JSI
+
+**Important**: The app uses WatermelonDB with SQLite adapter for data persistence. This requires:
+
+#### Development Environment
+
+**Option 1: Expo Go (Limited)**
+- SQLite works but with reduced performance (no JSI)
+- Suitable for basic testing
+- Run: `npm start`
+
+**Option 2: Custom Dev Client (Recommended)**
+- Full SQLite support with JSI enabled
+- Better performance and debugging
+- Required for production-like testing
+- Setup:
+  ```bash
+  # Create custom dev client
+  npx expo prebuild
+  npx expo run:android  # or run:ios
+  ```
+
+#### Production Builds
+
+**EAS Build (Recommended)**
+- Full SQLite support with JSI
+- Production-ready builds
+- Setup:
+  ```bash
+  npm install -g eas-cli
+  eas build --platform android  # or ios
+  ```
+
+**Local APK Build**
+- Full SQLite support with JSI
+- Use the provided build script:
+  ```bash
+  ./build-apk.sh
+  ```
+
+#### JSI Detection
+
+The app automatically detects the environment and enables/disables JSI accordingly:
+- **Expo Go**: JSI disabled (legacy bridge used)
+- **Custom Dev Client**: JSI enabled
+- **Production Build**: JSI enabled
+
+Check console logs for: `Database: Using SQLite adapter (JSI: enabled/disabled)`
 
 ## Troubleshooting
 

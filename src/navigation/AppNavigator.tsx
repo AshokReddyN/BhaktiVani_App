@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { NavigationContainer } from '@react-navigation/native'
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native'
 import { TouchableOpacity, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { Language, LanguageService } from '../services/languageService'
+import { getTranslations } from '../utils/translations'
 
 import TestScreen from '../screens/TestScreen'
 import HomeScreen from '../screens/HomeScreen'
@@ -14,8 +16,28 @@ import FavoritesScreen from '../screens/FavoritesScreen'
 const Stack = createNativeStackNavigator()
 
 const AppNavigator = () => {
+    const [currentLanguage, setCurrentLanguage] = useState<Language>('telugu')
+    const navigationRef = useNavigationContainerRef()
+
+    useEffect(() => {
+        const loadLanguage = async () => {
+            const lang = await LanguageService.getCurrentLanguage()
+            setCurrentLanguage(lang || 'telugu')
+        }
+        loadLanguage()
+
+        // Listen for navigation state changes to reload language
+        const unsubscribe = navigationRef.addListener('state', () => {
+            loadLanguage()
+        })
+
+        return unsubscribe
+    }, [navigationRef])
+
+    const t = getTranslations(currentLanguage)
+
     return (
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
             <Stack.Navigator
                 initialRouteName="Home"
                 screenOptions={{
@@ -30,7 +52,7 @@ const AppNavigator = () => {
                     name="Home"
                     component={HomeScreen}
                     options={({ navigation }) => ({
-                        title: 'భక్తి వాణి',
+                        title: t.appName,
                         headerTitleAlign: 'center',
                         headerRight: () => (
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, marginRight: 16 }}>
@@ -46,8 +68,8 @@ const AppNavigator = () => {
                 />
                 <Stack.Screen name="StotraList" component={StotraListScreen} />
                 <Stack.Screen name="StotraDetail" component={StotraDetailScreen} />
-                <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'సెట్టింగ్‌లు' }} />
-                <Stack.Screen name="Favorites" component={FavoritesScreen} options={{ title: 'నాకు ఇష్టమైనవి' }} />
+                <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t.settings }} />
+                <Stack.Screen name="Favorites" component={FavoritesScreen} options={{ title: t.favorites }} />
             </Stack.Navigator>
         </NavigationContainer>
     )

@@ -4,13 +4,18 @@ import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/nativ
 import { Ionicons } from '@expo/vector-icons'
 import { database } from '../database'
 import Stotra from '../database/models/Stotra'
+import Deity from '../database/models/Deity'
 import { Q } from '@nozbe/watermelondb'
+import { Language, LanguageService } from '../services/languageService'
+import { getTranslations } from '../utils/translations'
 
 const StotraListScreen = () => {
     const navigation = useNavigation()
     const route = useRoute()
     const { deityId, deityName } = route.params as { deityId: string, deityName: string }
     const [stotras, setStotras] = useState<Stotra[]>([])
+    const [currentLanguage, setCurrentLanguage] = useState<Language>('telugu')
+    const [deity, setDeity] = useState<Deity | null>(null)
     // const [searchQuery, setSearchQuery] = useState('')
 
     const fetchStotras = useCallback(async () => {
@@ -32,32 +37,70 @@ const StotraListScreen = () => {
     // Refetch when screen comes into focus (when navigating back from detail screen)
     useFocusEffect(
         useCallback(() => {
-            fetchStotras()
-        }, [fetchStotras])
+            const loadLanguage = async () => {
+                const lang = await LanguageService.getCurrentLanguage()
+                setCurrentLanguage(lang || 'telugu')
+
+                // Fetch deity to get language-specific name
+                const deityRecord = await database.get<Deity>('deities').find(deityId)
+                setDeity(deityRecord)
+
+                // Update screen title with deity name in selected language
+                const deityNameInLanguage = lang === 'telugu' ? deityRecord.nameTelugu : deityRecord.nameKannada
+                navigation.setOptions({ title: deityNameInLanguage })
+
+                // Re-fetch stotras to trigger re-render
+                await fetchStotras()
+            }
+            loadLanguage()
+        }, [fetchStotras, deityId, navigation])
     )
 
     useEffect(() => {
         navigation.setOptions({ headerShown: false })
     }, [navigation])
 
-    const renderItem = ({ item }: { item: Stotra }) => (
-        <TouchableOpacity
-            style={styles.stotraCard}
-            onPress={() => navigation.navigate('StotraDetail', { stotraId: item.id, title: item.title })}
-        >
-            <View style={styles.stotraContent}>
-                <View style={styles.iconContainer}>
-                    <Ionicons name="book" size={24} color="#EA580C" />
+    const t = getTranslations(currentLanguage)
+    const deityNameInLanguage = deity ? (currentLanguage === 'telugu' ? deity.nameTelugu : deity.nameKannada) : deityName
+
+    const renderItem = ({ item }: { item: Stotra }) => {
+        // Get language-specific title with proper fallback
+        // Handle empty strings as well as null/undefined
+        let displayTitle: string;
+        if (currentLanguage === 'telugu') {
+            displayTitle = (item.titleTelugu && item.titleTelugu.trim()) || item.title || 'Untitled';
+        } else {
+            // For Kannada, prefer Kannada title, fallback to Telugu if Kannada is empty, then to generic title
+            displayTitle = (item.titleKannada && item.titleKannada.trim()) 
+                || (item.titleTelugu && item.titleTelugu.trim()) 
+                || item.title 
+                || 'Untitled';
+        }
+
+        return (
+            <TouchableOpacity
+                style={styles.stotraCard}
+                onPress={() => navigation.navigate('StotraDetail', {
+                    stotraId: item.id,
+                    // Don't pass title - let detail screen get it from stotra object based on current language
+                })}
+            >
+                <View style={styles.stotraContent}>
+                    <View style={styles.iconContainer}>
+                        <Ionicons name="book" size={24} color="#EA580C" />
+                    </View>
+                    <Text style={styles.stotraTitle}>
+                        {displayTitle}
+                    </Text>
                 </View>
-                <Text style={styles.stotraTitle}>{item.title}</Text>
-            </View>
-            <Ionicons
-                name={item.isFavorite ? "heart" : "heart-outline"}
-                size={24}
-                color={item.isFavorite ? "#F97316" : "#D1D5DB"}
-            />
-        </TouchableOpacity>
-    )
+                <Ionicons
+                    name={item.isFavorite ? "heart" : "heart-outline"}
+                    size={24}
+                    color={item.isFavorite ? "#F97316" : "#D1D5DB"}
+                />
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <View style={styles.container}>
@@ -65,8 +108,9 @@ const StotraListScreen = () => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#FFF" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>భక్తి వాణి</Text>
+                <Text style={styles.headerTitle}>{t.appName}</Text>
             </View>
+            <Text style={styles.deityName}>{deityNameInLanguage}</Text>
             <View style={styles.content}>
                 {/* Search feature hidden for now */}
                 {/* <View style={styles.searchContainer}>
@@ -111,40 +155,56 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     headerTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#FFF',
+    },
+    deityName: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#FFFFFF',
+        color: '#1F2937',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: '#FFF7ED',
     },
     content: {
         flex: 1,
-        padding: 16,
     },
     searchContainer: {
-        backgroundColor: '#FEF3C7',
-        borderRadius: 12,
-        padding: 12,
-        marginBottom: 20,
         flexDirection: 'row',
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#FDE68A',
+        backgroundColor: 'white',
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        margin: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
     },
     searchIcon: {
         marginRight: 8,
     },
     searchInput: {
         flex: 1,
+        paddingVertical: 12,
         fontSize: 16,
-        color: '#1F2937',
     },
     stotraCard: {
-        backgroundColor: '#FEF3C7',
-        padding: 16,
-        marginBottom: 12,
-        borderRadius: 12,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
+        backgroundColor: 'white',
+        padding: 16,
+        marginHorizontal: 16,
+        marginBottom: 12,
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
     },
     stotraContent: {
         flexDirection: 'row',
@@ -152,16 +212,10 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     iconContainer: {
-        width: 48,
-        height: 48,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 8,
-        alignItems: 'center',
-        justifyContent: 'center',
         marginRight: 12,
     },
     stotraTitle: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: '600',
         color: '#1F2937',
         flex: 1,

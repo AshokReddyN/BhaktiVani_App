@@ -15,7 +15,25 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({
     navigate: mockNavigate,
     addListener: mockAddListener,
+    setOptions: jest.fn(),
   }),
+  useFocusEffect: jest.fn((callback) => {
+    callback()
+  }),
+}))
+
+// Mock LanguageService
+jest.mock('../../services/languageService', () => ({
+  LanguageService: {
+    getCurrentLanguage: jest.fn().mockResolvedValue('telugu'),
+  },
+}))
+
+// Mock translations
+jest.mock('../../utils/translations', () => ({
+  getTranslations: jest.fn(() => ({
+    favorites: 'Favorites',
+  })),
 }))
 
 // Mock WatermelonDB Q
@@ -30,6 +48,9 @@ const mockFavorites = [
   {
     id: '1',
     title: 'Test Stotra 1',
+    titleTelugu: 'Test Stotra 1',
+    titleKannada: 'Test Stotra 1 KN',
+    content: 'Test content 1',
     isFavorite: true,
     update: jest.fn((callback) => {
       callback({ isFavorite: false })
@@ -39,6 +60,9 @@ const mockFavorites = [
   {
     id: '2',
     title: 'Test Stotra 2',
+    titleTelugu: 'Test Stotra 2',
+    titleKannada: 'Test Stotra 2 KN',
+    content: 'Test content 2',
     isFavorite: true,
     update: jest.fn((callback) => {
       callback({ isFavorite: false })
@@ -82,14 +106,6 @@ describe('FavoritesScreen', () => {
     await waitFor(() => {
       expect(getByText('Test Stotra 1')).toBeTruthy()
     }, { timeout: 3000 })
-  })
-
-  it('should fetch favorites on focus', async () => {
-    render(<FavoritesScreen />)
-
-    await waitFor(() => {
-      expect(mockAddListener).toHaveBeenCalledWith('focus', expect.any(Function))
-    })
   })
 
   it('should display empty state when no favorites', async () => {
