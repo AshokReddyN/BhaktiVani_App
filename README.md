@@ -123,6 +123,55 @@ The app currently includes stotras for:
 - Favorites and settings are preserved
 - Database is automatically backed up by AsyncStorage cache
 
+### SQLite Adapter & JSI
+
+**Important**: The app uses WatermelonDB with SQLite adapter for data persistence. This requires:
+
+#### Development Environment
+
+**Option 1: Expo Go (Limited)**
+- SQLite works but with reduced performance (no JSI)
+- Suitable for basic testing
+- Run: `npm start`
+
+**Option 2: Custom Dev Client (Recommended)**
+- Full SQLite support with JSI enabled
+- Better performance and debugging
+- Required for production-like testing
+- Setup:
+  ```bash
+  # Create custom dev client
+  npx expo prebuild
+  npx expo run:android  # or run:ios
+  ```
+
+#### Production Builds
+
+**EAS Build (Recommended)**
+- Full SQLite support with JSI
+- Production-ready builds
+- Setup:
+  ```bash
+  npm install -g eas-cli
+  eas build --platform android  # or ios
+  ```
+
+**Local APK Build**
+- Full SQLite support with JSI
+- Use the provided build script:
+  ```bash
+  ./build-apk.sh
+  ```
+
+#### JSI Detection
+
+The app automatically detects the environment and enables/disables JSI accordingly:
+- **Expo Go**: JSI disabled (legacy bridge used)
+- **Custom Dev Client**: JSI enabled
+- **Production Build**: JSI enabled
+
+Check console logs for: `Database: Using SQLite adapter (JSI: enabled/disabled)`
+
 ## Troubleshooting
 
 ### App not loading?
