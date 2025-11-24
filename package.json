@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "start": "./start-expo.sh",
+    "start": "expo start",
+    "dev:start": "./start-expo.sh",
     "start:direct": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
