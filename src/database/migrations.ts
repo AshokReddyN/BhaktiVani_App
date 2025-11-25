@@ -27,5 +27,17 @@ export default schemaMigrations({
                 },
             ],
         },
+        {
+            toVersion: 3,
+            steps: [
+                {
+                    type: 'add_columns',
+                    table: 'deities',
+                    columns: [
+                        { name: 'name_english', type: 'string' },
+                    ],
+                },
+            ],
+        },
     ],
 })

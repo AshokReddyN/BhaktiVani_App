@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet } from 'react-native'
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
@@ -8,6 +8,7 @@ import Deity from '../database/models/Deity'
 import { Q } from '@nozbe/watermelondb'
 import { Language, LanguageService } from '../services/languageService'
 import { getTranslations } from '../utils/translations'
+import { SearchBar } from '../components/SearchBar'
 
 const StotraListScreen = () => {
     const navigation = useNavigation()
@@ -16,23 +17,33 @@ const StotraListScreen = () => {
     const [stotras, setStotras] = useState<Stotra[]>([])
     const [currentLanguage, setCurrentLanguage] = useState<Language>('telugu')
     const [deity, setDeity] = useState<Deity | null>(null)
-    // const [searchQuery, setSearchQuery] = useState('')
+    const [searchQuery, setSearchQuery] = useState('')
 
     const fetchStotras = useCallback(async () => {
         const collection = database.get<Stotra>('stotras')
         const query = collection.query(Q.where('deity_id', deityId))
-
-        // Search functionality hidden for now
-        // if (searchQuery) {
-        //     query = collection.query(
-        //         Q.where('deity_id', deityId),
-        //         Q.where('title', Q.like(`%${searchQuery}%`))
-        //     )
-        // }
-
         const data = await query.fetch()
         setStotras(data)
     }, [deityId])
+
+    // Filter stotras based on search query
+    const filteredStotras = useMemo(() => {
+        if (!searchQuery || searchQuery.trim().length === 0) {
+            return stotras;
+        }
+
+        const normalizedQuery = searchQuery.toLowerCase().trim();
+
+        return stotras.filter(stotra => {
+            const title = (stotra.title || '').toLowerCase();
+            const titleTelugu = (stotra.titleTelugu || '').toLowerCase();
+            const titleKannada = (stotra.titleKannada || '').toLowerCase();
+
+            return title.includes(normalizedQuery) ||
+                titleTelugu.includes(normalizedQuery) ||
+                titleKannada.includes(normalizedQuery);
+        });
+    }, [stotras, searchQuery]);
 
     // Refetch when screen comes into focus (when navigating back from detail screen)
     useFocusEffect(
@@ -71,9 +82,9 @@ const StotraListScreen = () => {
             displayTitle = (item.titleTelugu && item.titleTelugu.trim()) || item.title || 'Untitled';
         } else {
             // For Kannada, prefer Kannada title, fallback to Telugu if Kannada is empty, then to generic title
-            displayTitle = (item.titleKannada && item.titleKannada.trim()) 
-                || (item.titleTelugu && item.titleTelugu.trim()) 
-                || item.title 
+            displayTitle = (item.titleKannada && item.titleKannada.trim())
+                || (item.titleTelugu && item.titleTelugu.trim())
+                || item.title
                 || 'Untitled';
         }
 

@@ -1,12 +1,13 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb'
 
 export const schema = appSchema({
-    version: 2,
+    version: 3,
     tables: [
         tableSchema({
             name: 'deities',
             columns: [
                 { name: 'name', type: 'string' },
+                { name: 'name_english', type: 'string' },
                 { name: 'name_telugu', type: 'string' },
                 { name: 'name_kannada', type: 'string' },
                 { name: 'image', type: 'string' },
