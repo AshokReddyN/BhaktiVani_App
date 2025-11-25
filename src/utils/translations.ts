@@ -25,6 +25,7 @@ export interface Translations {
     light: string
     sepia: string
     dark: string
+    searchStotra: string
 }
 
 export const translations: Record<Language, Translations> = {
@@ -53,6 +54,7 @@ export const translations: Record<Language, Translations> = {
         light: 'Light',
         sepia: 'Sepia',
         dark: 'Dark',
+        searchStotra: 'స్తోత్రం కోసం వెతకండి',
     },
     kannada: {
         appName: 'ಭಕ್ತಿ ವಾಣಿ',
@@ -79,6 +81,7 @@ export const translations: Record<Language, Translations> = {
         light: 'Light',
         sepia: 'Sepia',
         dark: 'Dark',
+        searchStotra: 'ಸ್ತೋತ್ರವನ್ನು ಹುಡುಕಿ',
     },
 }
 

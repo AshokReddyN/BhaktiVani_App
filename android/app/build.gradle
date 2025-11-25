@@ -126,6 +126,12 @@ android {
             def enableLegacyPackaging = findProperty('expo.useLegacyPackaging') ?: 'false'
             useLegacyPackaging enableLegacyPackaging.toBoolean()
         }
+        resources {
+            pickFirsts += ['META-INF/androidx.appcompat_appcompat.version']
+            pickFirsts += ['META-INF/androidx.core_core.version']
+            pickFirsts += ['META-INF/androidx.fragment_fragment.version']
+            pickFirsts += ['META-INF/androidx.versionedparcelable_versionedparcelable.version']
+        }
     }
     androidResources {
         ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'

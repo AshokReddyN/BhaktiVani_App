@@ -18,6 +18,17 @@ allprojects {
     mavenCentral()
     maven { url 'https://www.jitpack.io' }
   }
+  
+  configurations.all {
+    resolutionStrategy {
+      force 'androidx.core:core:1.13.0'
+      force 'androidx.appcompat:appcompat:1.7.0'
+      force 'androidx.fragment:fragment:1.8.0'
+      force 'androidx.versionedparcelable:versionedparcelable:1.2.0'
+    }
+    
+    exclude group: 'com.android.support'
+  }
 }
 
 apply plugin: "expo-root-project"

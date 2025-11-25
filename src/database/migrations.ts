@@ -39,5 +39,17 @@ export default schemaMigrations({
                 },
             ],
         },
+        {
+            toVersion: 4,
+            steps: [
+                {
+                    type: 'add_columns',
+                    table: 'stotras',
+                    columns: [
+                        { name: 'title_english', type: 'string' },
+                    ],
+                },
+            ],
+        },
     ],
 })

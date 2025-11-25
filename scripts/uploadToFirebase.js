@@ -16,6 +16,7 @@ const db = admin.firestore();
 const deities = [
     {
         deity_id: 'ganesha',
+        name_english: 'Ganesha',
         name_telugu: 'గణేశుడు',
         name_kannada: 'ಗಣೇಶ',
         image: 'ganesha',
@@ -23,6 +24,7 @@ const deities = [
     },
     {
         deity_id: 'venkateswara',
+        name_english: 'Venkateswara',
         name_telugu: 'వేంకటేశ్వరుడు',
         name_kannada: 'ವೆಂಕಟೇಶ್ವರ',
         image: 'venkateswara',
@@ -30,6 +32,7 @@ const deities = [
     },
     {
         deity_id: 'shiva',
+        name_english: 'Shiva',
         name_telugu: 'శివుడు',
         name_kannada: 'ಶಿವ',
         image: 'shiva',
@@ -37,6 +40,7 @@ const deities = [
     },
     {
         deity_id: 'vishnu',
+        name_english: 'Vishnu',
         name_telugu: 'విష్ణువు',
         name_kannada: 'ವಿಷ್ಣು',
         image: 'vishnu',
@@ -44,6 +48,7 @@ const deities = [
     },
     {
         deity_id: 'lakshmi',
+        name_english: 'Lakshmi',
         name_telugu: 'లక్ష్మి',
         name_kannada: 'ಲಕ್ಷ್ಮಿ',
         image: 'lakshmi',
@@ -51,6 +56,7 @@ const deities = [
     },
     {
         deity_id: 'hanuman',
+        name_english: 'Hanuman',
         name_telugu: 'హనుమాన్',
         name_kannada: 'ಹನುಮಾನ್',
         image: 'hanuman',
@@ -58,6 +64,7 @@ const deities = [
     },
     {
         deity_id: 'rama',
+        name_english: 'Rama',
         name_telugu: 'శ్రీరాముడు',
         name_kannada: 'ಶ್ರೀರಾಮ',
         image: 'rama',
@@ -65,6 +72,7 @@ const deities = [
     },
     {
         deity_id: 'krishna',
+        name_english: 'Krishna',
         name_telugu: 'శ్రీకృష్ణుడు',
         name_kannada: 'ಶ್ರೀಕೃಷ್ಣ',
         image: 'krishna',
@@ -72,6 +80,7 @@ const deities = [
     },
     {
         deity_id: 'saraswati',
+        name_english: 'Saraswati',
         name_telugu: 'సరస్వతీ దేవి',
         name_kannada: 'ಸರಸ್ವತಿ ದೇವಿ',
         image: 'saraswati',
@@ -85,6 +94,7 @@ const stotras = [
         stotra_id: 'ganesha_pancharatnam_001',
         deity_id: 'ganesha',
         category: 'pancharatnam',
+        title_english: 'Ganesha Pancharatnam',
         title_telugu: 'గణేశ పంచరత్నం',
         title_kannada: 'ಗಣೇಶ ಪಂಚರತ್ನಂ',
         text_telugu: `ముదాకరాత్త మోదకం సదా విముక్తి సాధకం
@@ -154,6 +164,7 @@ const stotras = [
         stotra_id: 'rama_ashtottara_001',
         deity_id: 'rama',
         category: 'ashtottara',
+        title_english: 'Sri Rama Ashtottara Shatanamavali',
         title_telugu: 'శ్రీరామ అష్టోత్తర శతనామావళి',
         title_kannada: 'ಶ್ರೀರಾಮ ಅಷ್ಟೋತ್ತರ ಶತನಾಮಾವಳಿ',
         text_telugu: `ఓం శ్రీరామాయ నమః |
@@ -204,6 +215,7 @@ const stotras = [
         stotra_id: 'rama_stotram_002',
         deity_id: 'rama',
         category: 'stotram',
+        title_english: 'Sri Rama Stotram',
         title_telugu: 'శ్రీరామ స్తోత్రం',
         title_kannada: 'ಶ್ರೀರಾಮ ಸ್ತೋತ್ರಂ',
         text_telugu: `శ్రీరామ రామ రఘువీర రామ
@@ -242,6 +254,7 @@ const stotras = [
         stotra_id: 'rama_mantra_003',
         deity_id: 'rama',
         category: 'mantra',
+        title_english: 'Sri Rama Mantra',
         title_telugu: 'శ్రీరామ మంత్రం',
         title_kannada: 'ಶ್ರೀರಾಮ ಮಂತ್ರಂ',
         text_telugu: `ఓం శ్రీ రామాయ నమః |
@@ -269,6 +282,7 @@ const stotras = [
         stotra_id: 'krishna_ashtottara_001',
         deity_id: 'krishna',
         category: 'ashtottara',
+        title_english: 'Sri Krishna Ashtottara Shatanamavali',
         title_telugu: 'శ్రీకృష్ణ అష్టోత్తర శతనామావళి',
         title_kannada: 'ಶ್ರೀಕೃಷ್ಣ ಅಷ್ಟೋತ್ತರ ಶತನಾಮಾವಳಿ',
         text_telugu: `ఓం కృష్ణాయ నమః |
@@ -319,6 +333,7 @@ const stotras = [
         stotra_id: 'krishna_stotram_002',
         deity_id: 'krishna',
         category: 'stotram',
+        title_english: 'Sri Krishna Stotram',
         title_telugu: 'శ్రీకృష్ణ స్తోత్రం',
         title_kannada: 'ಶ್ರೀಕೃಷ್ಣ ಸ್ತೋತ್ರಂ',
         text_telugu: `వసుదేవసుతం దేవం కంసచాణూరమర్దనమ్ |
@@ -351,6 +366,7 @@ const stotras = [
         stotra_id: 'krishna_mantra_003',
         deity_id: 'krishna',
         category: 'mantra',
+        title_english: 'Sri Krishna Mantra',
         title_telugu: 'శ్రీకృష్ణ మంత్రం',
         title_kannada: 'ಶ್ರೀಕೃಷ್ಣ ಮಂತ್ರಂ',
         text_telugu: `ఓం నమో భగవతే వాసుదేవాయ |
@@ -376,6 +392,7 @@ const stotras = [
         stotra_id: 'saraswati_stotram_001',
         deity_id: 'saraswati',
         category: 'stotram',
+        title_english: 'Saraswati Stotram',
         title_telugu: 'సరస్వతీ స్తోత్రం',
         title_kannada: 'ಸರಸ್ವತೀ ಸ್ತೋತ್ರಂ',
         text_telugu: `యా కుందేందుతుషారహారధవళా యా శుభ్రవస్త్రావృతా
@@ -404,6 +421,7 @@ const stotras = [
         stotra_id: 'saraswati_namavali_002',
         deity_id: 'saraswati',
         category: 'namavali',
+        title_english: 'Saraswati Namavali',
         title_telugu: 'సరస్వతీ నామావళి',
         title_kannada: 'ಸರಸ್ವತೀ ನಾಮಾವಳಿ',
         text_telugu: `ఓం సరస్వత్యై నమః |
@@ -446,6 +464,7 @@ const stotras = [
         stotra_id: 'saraswati_mantra_003',
         deity_id: 'saraswati',
         category: 'mantra',
+        title_english: 'Saraswati Mantra',
         title_telugu: 'సరస్వతీ మంత్రం',
         title_kannada: 'ಸರಸ್ವತೀ ಮಂತ್ರಂ',
         text_telugu: `ఓం ఐం సరస్వత్యై నమః |

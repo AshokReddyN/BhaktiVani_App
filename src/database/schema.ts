@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb'
 
 export const schema = appSchema({
-    version: 3,
+    version: 4,
     tables: [
         tableSchema({
             name: 'deities',
@@ -18,6 +18,7 @@ export const schema = appSchema({
             columns: [
                 { name: 'stotra_id', type: 'string', isIndexed: true },
                 { name: 'title', type: 'string' },
+                { name: 'title_english', type: 'string' },
                 { name: 'content', type: 'string' },
                 { name: 'title_telugu', type: 'string' },
                 { name: 'text_telugu', type: 'string' },

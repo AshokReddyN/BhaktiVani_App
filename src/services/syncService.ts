@@ -10,6 +10,7 @@ export interface StotraData {
     stotra_id: string;
     deity_id: string;
     category: string;
+    title_english: string;
     title_telugu: string;
     text_telugu: string;
     title_kannada: string;
@@ -113,6 +114,7 @@ export const SyncService = {
                     if (deity) {
                         await database.get<Stotra>('stotras').create(stotra => {
                             stotra.stotraId = stotraData.stotra_id;
+                            stotra.titleEnglish = stotraData.title_english || '';
 
                             if (language === 'telugu') {
                                 // Download only Telugu content
@@ -235,6 +237,7 @@ export const SyncService = {
                     if (deity) {
                         await database.get<Stotra>('stotras').create(stotra => {
                             stotra.stotraId = stotraData.stotra_id;
+                            stotra.titleEnglish = stotraData.title_english || '';
 
                             if (language === 'telugu') {
                                 stotra.title = stotraData.title_telugu;
@@ -369,6 +372,7 @@ export const SyncService = {
                 if (deity) {
                     await collection.create(stotra => {
                         stotra.stotraId = stotraData.stotra_id;
+                        stotra.titleEnglish = stotraData.title_english || '';
 
                         if (currentLanguage === 'telugu') {
                             stotra.title = stotraData.title_telugu;
