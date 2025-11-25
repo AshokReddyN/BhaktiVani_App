@@ -1,14 +1,23 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native'
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { database } from '../database'
 import Deity from '../database/models/Deity'
 import { LanguageService } from '../services/languageService'
+import { SearchBar } from '../components/SearchBar'
+import { searchDeities, getDeityDisplayName } from '../utils/searchUtils'
+import { getTranslation } from '../utils/translations'
 
 const HomeScreen = () => {
     const navigation = useNavigation()
     const [deities, setDeities] = useState<Deity[]>([])
     const [currentLanguage, setCurrentLanguage] = useState<'telugu' | 'kannada'>('telugu')
+    const [searchQuery, setSearchQuery] = useState('')
+
+    // Filter deities based on search query using fuzzy matching
+    const filteredDeities = useMemo(() => {
+        return searchDeities(deities, searchQuery, currentLanguage);
+    }, [deities, searchQuery, currentLanguage]);
 
     // Load language preference when screen focuses
     useFocusEffect(
@@ -48,7 +57,7 @@ const HomeScreen = () => {
                 const data = await database.get<Deity>('deities').query().fetch();
                 console.log(`HomeScreen: Initial load - ${data.length} deities`);
                 setDeities(data);
-                
+
                 // If no data, try seeding
                 if (data.length === 0) {
                     console.log('HomeScreen: No deities on initial load, seeding...');
@@ -111,13 +120,28 @@ const HomeScreen = () => {
 
     return (
         <View style={styles.container}>
-            <FlatList
-                data={deities}
-                renderItem={renderItem}
-                keyExtractor={item => item.id}
-                numColumns={2}
-                contentContainerStyle={{ paddingBottom: 20 }}
+            <SearchBar
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder={getTranslation('searchDeities', currentLanguage)}
+                onClear={() => setSearchQuery('')}
             />
+            {filteredDeities.length === 0 && searchQuery.length > 0 ? (
+                <View style={styles.emptyState}>
+                    <Text style={styles.emptyStateText}>{getTranslation('noDeitiesFound', currentLanguage)}</Text>
+                    <Text style={styles.emptyStateSubtext}>
+                        {getTranslation('tryDifferentSearch', currentLanguage)}
+                    </Text>
+                </View>
+            ) : (
+                <FlatList
+                    data={filteredDeities}
+                    renderItem={renderItem}
+                    keyExtractor={item => item.id}
+                    numColumns={2}
+                    contentContainerStyle={{ paddingBottom: 20 }}
+                />
+            )}
         </View>
     )
 }
@@ -126,7 +150,23 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F5F5F5',
-        padding: 16,
+    },
+    emptyState: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 32,
+    },
+    emptyStateText: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#666',
+        marginBottom: 8,
+    },
+    emptyStateSubtext: {
+        fontSize: 14,
+        color: '#999',
+        textAlign: 'center',
     },
     card: {
         flex: 1,

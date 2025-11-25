@@ -18,6 +18,10 @@ allprojects {
     mavenCentral()
     maven { url 'https://www.jitpack.io' }
   }
+  
+  configurations.all {
+    exclude group: 'com.android.support'
+  }
 }
 
 apply plugin: "expo-root-project"

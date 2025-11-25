@@ -10,6 +10,7 @@ export default class Stotra extends Model {
 
     @field('stotra_id') stotraId!: string
     @field('title') title!: string
+    @field('title_english') titleEnglish!: string
     @field('content') content!: string
     @field('title_telugu') titleTelugu!: string
     @field('text_telugu') textTelugu!: string

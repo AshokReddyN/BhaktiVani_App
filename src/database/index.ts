@@ -6,44 +6,43 @@ import Stotra from './models/Stotra'
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite'
 import { Platform } from 'react-native'
 
-// Use SQLite adapter for production-ready persistence in React Native
-// This ensures data persists across app restarts and device reboots
+import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 
 // Conditionally enable JSI based on environment
 // JSI is available in:
 // - Expo SDK 54+ with custom dev client or EAS build
 // - NOT available in Expo Go (uses legacy bridge)
-const useJSI = (() => {
-    try {
-        // Check if we're in a custom dev client or production build
-        // Expo Go doesn't support JSI for SQLite
-        const isExpoGo = __DEV__ && !process.env.EXPO_PUBLIC_USE_CUSTOM_CLIENT;
+const isExpoGo = __DEV__ && !process.env.EXPO_PUBLIC_USE_CUSTOM_CLIENT;
 
-        if (isExpoGo) {
-            console.log('Database: Running in Expo Go - JSI disabled');
-            return false;
+let adapter;
+
+if (isExpoGo) {
+    console.log('Database: Running in Expo Go - Using LokiJSAdapter (SQLite not supported without custom client)');
+    adapter = new LokiJSAdapter({
+        schema,
+        migrations,
+        useWebWorker: false,
+        useIncrementalIndexedDB: true,
+        onSetUpError: (error: any) => {
+            console.error('Database: LokiJS load failed', error);
         }
+    });
+} else {
+    const useJSI = true; // Always try JSI in custom client/production
+    console.log('Database: Custom client/Production detected - Using SQLiteAdapter with JSI');
 
-        console.log('Database: Custom client detected - JSI enabled');
-        return true;
-    } catch (error) {
-        console.warn('Database: Could not detect environment, defaulting to JSI disabled');
-        return false;
-    }
-})();
+    adapter = new SQLiteAdapter({
+        schema,
+        migrations,
+        dbName: 'bhaktivani',
+        jsi: useJSI,
+        onSetUpError: error => {
+            console.error('Database: SQLite load failed', error);
+        }
+    });
+}
 
-const adapter = new SQLiteAdapter({
-    schema,
-    migrations,
-    dbName: 'bhaktivani',
-    jsi: useJSI,
-    onSetUpError: error => {
-        console.error('Database failed to load', error);
-        console.error('If using Expo Go, SQLite persistence may not work. Use a custom dev client or EAS build.');
-    }
-})
-
-console.log(`Database: Using SQLite adapter (JSI: ${useJSI ? 'enabled' : 'disabled'})`);
+console.log(`Database: Adapter initialized (${isExpoGo ? 'LokiJS' : 'SQLite'})`);
 
 export const database = new Database({
     adapter,

@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react'
-import { View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet } from 'react-native'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native'
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import { database } from '../database'
@@ -8,6 +8,7 @@ import Deity from '../database/models/Deity'
 import { Q } from '@nozbe/watermelondb'
 import { Language, LanguageService } from '../services/languageService'
 import { getTranslations } from '../utils/translations'
+import { SearchBar } from '../components/SearchBar'
 
 const StotraListScreen = () => {
     const navigation = useNavigation()
@@ -16,23 +17,35 @@ const StotraListScreen = () => {
     const [stotras, setStotras] = useState<Stotra[]>([])
     const [currentLanguage, setCurrentLanguage] = useState<Language>('telugu')
     const [deity, setDeity] = useState<Deity | null>(null)
-    // const [searchQuery, setSearchQuery] = useState('')
+    const [searchQuery, setSearchQuery] = useState('')
 
     const fetchStotras = useCallback(async () => {
         const collection = database.get<Stotra>('stotras')
         const query = collection.query(Q.where('deity_id', deityId))
-
-        // Search functionality hidden for now
-        // if (searchQuery) {
-        //     query = collection.query(
-        //         Q.where('deity_id', deityId),
-        //         Q.where('title', Q.like(`%${searchQuery}%`))
-        //     )
-        // }
-
         const data = await query.fetch()
         setStotras(data)
     }, [deityId])
+
+    // Filter stotras based on search query
+    const filteredStotras = useMemo(() => {
+        if (!searchQuery || searchQuery.trim().length === 0) {
+            return stotras;
+        }
+
+        const normalizedQuery = searchQuery.toLowerCase().trim();
+
+        return stotras.filter(stotra => {
+            const title = (stotra.title || '').toLowerCase();
+            const titleEnglish = (stotra.titleEnglish || '').toLowerCase();
+            const titleTelugu = (stotra.titleTelugu || '').toLowerCase();
+            const titleKannada = (stotra.titleKannada || '').toLowerCase();
+
+            return title.includes(normalizedQuery) ||
+                titleEnglish.includes(normalizedQuery) ||
+                titleTelugu.includes(normalizedQuery) ||
+                titleKannada.includes(normalizedQuery);
+        });
+    }, [stotras, searchQuery]);
 
     // Refetch when screen comes into focus (when navigating back from detail screen)
     useFocusEffect(
@@ -71,9 +84,9 @@ const StotraListScreen = () => {
             displayTitle = (item.titleTelugu && item.titleTelugu.trim()) || item.title || 'Untitled';
         } else {
             // For Kannada, prefer Kannada title, fallback to Telugu if Kannada is empty, then to generic title
-            displayTitle = (item.titleKannada && item.titleKannada.trim()) 
-                || (item.titleTelugu && item.titleTelugu.trim()) 
-                || item.title 
+            displayTitle = (item.titleKannada && item.titleKannada.trim())
+                || (item.titleTelugu && item.titleTelugu.trim())
+                || item.title
                 || 'Untitled';
         }
 
@@ -111,20 +124,14 @@ const StotraListScreen = () => {
                 <Text style={styles.headerTitle}>{t.appName}</Text>
             </View>
             <Text style={styles.deityName}>{deityNameInLanguage}</Text>
+            <SearchBar
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder={t.searchStotra}
+            />
             <View style={styles.content}>
-                {/* Search feature hidden for now */}
-                {/* <View style={styles.searchContainer}>
-                    <Ionicons name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
-                    <TextInput
-                        placeholder="మంత్రం కోసం వెతకండి"
-                        style={styles.searchInput}
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
-                        placeholderTextColor="#9CA3AF"
-                    />
-                </View> */}
                 <FlatList
-                    data={stotras}
+                    data={filteredStotras}
                     renderItem={renderItem}
                     keyExtractor={item => item.id}
                     showsVerticalScrollIndicator={false}
@@ -169,27 +176,6 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-    },
-    searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'white',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        margin: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
-    },
-    searchIcon: {
-        marginRight: 8,
-    },
-    searchInput: {
-        flex: 1,
-        paddingVertical: 12,
-        fontSize: 16,
     },
     stotraCard: {
         flexDirection: 'row',

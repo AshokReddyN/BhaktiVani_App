@@ -9,6 +9,7 @@ export default class Deity extends Model {
     } as const
 
     @field('name') name!: string
+    @field('name_english') nameEnglish!: string
     @field('name_telugu') nameTelugu!: string
     @field('name_kannada') nameKannada!: string
     @field('image') image!: string

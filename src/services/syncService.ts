@@ -10,6 +10,7 @@ export interface StotraData {
     stotra_id: string;
     deity_id: string;
     category: string;
+    title_english: string;
     title_telugu: string;
     text_telugu: string;
     title_kannada: string;
@@ -19,6 +20,7 @@ export interface StotraData {
 
 export interface DeityData {
     deity_id: string;
+    name_english: string;
     name_telugu: string;
     name_kannada: string;
     image: string;
@@ -95,6 +97,7 @@ export const SyncService = {
                 for (const deityData of deitiesData) {
                     const deity = await database.get<Deity>('deities').create(d => {
                         d.name = language === 'telugu' ? deityData.name_telugu : deityData.name_kannada;
+                        d.nameEnglish = deityData.name_english;
                         d.nameTelugu = deityData.name_telugu;
                         d.nameKannada = deityData.name_kannada;
                         d.image = deityData.image;
@@ -111,6 +114,7 @@ export const SyncService = {
                     if (deity) {
                         await database.get<Stotra>('stotras').create(stotra => {
                             stotra.stotraId = stotraData.stotra_id;
+                            stotra.titleEnglish = stotraData.title_english || '';
 
                             if (language === 'telugu') {
                                 // Download only Telugu content
@@ -213,6 +217,7 @@ export const SyncService = {
                     const deityData = deitiesData[i];
                     const deity = await database.get<Deity>('deities').create(d => {
                         d.name = language === 'telugu' ? deityData.name_telugu : deityData.name_kannada;
+                        d.nameEnglish = deityData.name_english;
                         d.nameTelugu = deityData.name_telugu;
                         d.nameKannada = deityData.name_kannada;
                         d.image = deityData.image;
@@ -232,6 +237,7 @@ export const SyncService = {
                     if (deity) {
                         await database.get<Stotra>('stotras').create(stotra => {
                             stotra.stotraId = stotraData.stotra_id;
+                            stotra.titleEnglish = stotraData.title_english || '';
 
                             if (language === 'telugu') {
                                 stotra.title = stotraData.title_telugu;
@@ -366,6 +372,7 @@ export const SyncService = {
                 if (deity) {
                     await collection.create(stotra => {
                         stotra.stotraId = stotraData.stotra_id;
+                        stotra.titleEnglish = stotraData.title_english || '';
 
                         if (currentLanguage === 'telugu') {
                             stotra.title = stotraData.title_telugu;
