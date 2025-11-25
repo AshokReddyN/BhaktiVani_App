@@ -122,12 +122,6 @@ android {
         }
     }
     packagingOptions {
-        pickFirst '**/libc++_shared.so'
-        pickFirst '**/libfbjni.so'
-        pickFirst '**/libjsi.so'
-        pickFirst 'META-INF/androidx.appcompat_appcompat.version'
-        pickFirst 'META-INF/androidx.*.version'
-        pickFirst 'META-INF/com.android.support_*.version'
         jniLibs {
             def enableLegacyPackaging = findProperty('expo.useLegacyPackaging') ?: 'false'
             useLegacyPackaging enableLegacyPackaging.toBoolean()
@@ -185,7 +179,4 @@ dependencies {
     } else {
         implementation jscFlavor
     }
-    
-    // Manually link @react-native-voice/voice
-    implementation project(':react-native-voice_voice')
 }

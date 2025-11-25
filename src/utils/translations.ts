@@ -26,6 +26,9 @@ export interface Translations {
     sepia: string
     dark: string
     searchStotra: string
+    searchDeities: string
+    noDeitiesFound: string
+    tryDifferentSearch: string
 }
 
 export const translations: Record<Language, Translations> = {
@@ -55,6 +58,9 @@ export const translations: Record<Language, Translations> = {
         sepia: 'Sepia',
         dark: 'Dark',
         searchStotra: 'స్తోత్రం కోసం వెతకండి',
+        searchDeities: 'దేవతలను వెతకండి...',
+        noDeitiesFound: 'దేవతలు కనుగొనబడలేదు',
+        tryDifferentSearch: 'వేరే పేరుతో వెతకండి',
     },
     kannada: {
         appName: 'ಭಕ್ತಿ ವಾಣಿ',
@@ -82,6 +88,9 @@ export const translations: Record<Language, Translations> = {
         sepia: 'Sepia',
         dark: 'Dark',
         searchStotra: 'ಸ್ತೋತ್ರವನ್ನು ಹುಡುಕಿ',
+        searchDeities: 'ದೇವತೆಗಳನ್ನು ಹುಡುಕಿ...',
+        noDeitiesFound: 'ದೇವತೆಗಳು ಕಂಡುಬಂದಿಲ್ಲ',
+        tryDifferentSearch: 'ಬೇರೆ ಹೆಸರಿನಿಂದ ಹುಡುಕಿ',
     },
 }
 

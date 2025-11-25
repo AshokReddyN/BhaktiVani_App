@@ -6,6 +6,7 @@ import Deity from '../database/models/Deity'
 import { LanguageService } from '../services/languageService'
 import { SearchBar } from '../components/SearchBar'
 import { searchDeities, getDeityDisplayName } from '../utils/searchUtils'
+import { getTranslation } from '../utils/translations'
 
 const HomeScreen = () => {
     const navigation = useNavigation()
@@ -122,14 +123,14 @@ const HomeScreen = () => {
             <SearchBar
                 value={searchQuery}
                 onChangeText={setSearchQuery}
-                placeholder="Search deities..."
+                placeholder={getTranslation('searchDeities', currentLanguage)}
                 onClear={() => setSearchQuery('')}
             />
             {filteredDeities.length === 0 && searchQuery.length > 0 ? (
                 <View style={styles.emptyState}>
-                    <Text style={styles.emptyStateText}>No deities found</Text>
+                    <Text style={styles.emptyStateText}>{getTranslation('noDeitiesFound', currentLanguage)}</Text>
                     <Text style={styles.emptyStateSubtext}>
-                        Try searching with a different name
+                        {getTranslation('tryDifferentSearch', currentLanguage)}
                     </Text>
                 </View>
             ) : (

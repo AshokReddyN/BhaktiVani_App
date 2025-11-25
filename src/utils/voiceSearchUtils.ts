@@ -76,6 +76,7 @@ export const getAndroidVersionName = (): string => {
         32: 'Android 12L',
         33: 'Android 13',
         34: 'Android 14',
+        35: 'Android 15',
     };
     return versionMap[apiLevel] || `Android API ${apiLevel}`;
 };

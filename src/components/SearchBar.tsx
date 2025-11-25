@@ -8,6 +8,7 @@ import {
     Platform,
     Alert,
     Linking,
+    PermissionsAndroid,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Voice from '@react-native-voice/voice';
@@ -217,6 +218,49 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         setHasShownAndroidWarning(true);
     };
 
+    const requestMicrophonePermission = async (): Promise<boolean> => {
+        if (Platform.OS !== 'android') {
+            return true; // iOS handles permissions differently
+        }
+
+        try {
+            console.log('SearchBar: Requesting microphone permission...');
+            
+            // Check if permission is already granted
+            const checkResult = await PermissionsAndroid.check(
+                PermissionsAndroid.PERMISSIONS.RECORD_AUDIO
+            );
+            
+            console.log('SearchBar: Permission check result:', checkResult);
+            
+            if (checkResult) {
+                return true;
+            }
+
+            // Request permission
+            const result = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+                {
+                    title: currentLanguage === 'telugu' 
+                        ? 'మైక్రోఫోన్ అనుమతి అవసరం' 
+                        : 'ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿ ಅಗತ್ಯವಿದೆ',
+                    message: currentLanguage === 'telugu'
+                        ? 'వాయిస్ సెర్చ్ కోసం మీ వాయిస్‌ను వినడం కోసం మాకు మైక్రోఫోన్ అనుమతులు అవసరం.'
+                        : 'ಧ್ವನಿ ಹುಡುಕಾಟಕ್ಕಾಗಿ ನಿಮ್ಮ ಧ್ವನಿಯನ್ನು ಕೇಳಲು ನಮಗೆ ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿಗಳು ಬೇಕಾಗುತ್ತವೆ.',
+                    buttonNeutral: currentLanguage === 'telugu' ? 'తర్వాత అడగండి' : 'ನಂತರ ಕೇಳಿ',
+                    buttonNegative: currentLanguage === 'telugu' ? 'రద్దు చేయండి' : 'ರದ್ದುಗೊಳಿಸಿ',
+                    buttonPositive: 'OK',
+                }
+            );
+
+            console.log('SearchBar: Permission request result:', result);
+            return result === PermissionsAndroid.RESULTS.GRANTED;
+        } catch (error) {
+            console.log('SearchBar: Permission request error:', error);
+            return false;
+        }
+    };
+
     const startVoiceRecognition = async () => {
         try {
             console.log('SearchBar: Starting voice recognition...');
@@ -229,6 +273,28 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 Alert.alert(errorMsg.title, errorMsg.message, [{ text: 'OK' }]);
                 return;
             }
+
+            // Request microphone permission first (critical for Android 15+)
+            const hasPermission = await requestMicrophonePermission();
+            
+            if (!hasPermission) {
+                console.log('SearchBar: Microphone permission denied');
+                const errorMsg = getVoiceErrorMessage('permission', currentLanguage);
+                Alert.alert(
+                    errorMsg.title,
+                    errorMsg.message,
+                    [
+                        { text: currentLanguage === 'telugu' ? 'రద్దు చేయండి' : 'ರದ್ದುಗೊಳಿಸಿ', style: 'cancel' },
+                        { 
+                            text: currentLanguage === 'telugu' ? 'సెట్టింగ్స్' : 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು',
+                            onPress: () => Linking.openSettings() 
+                        }
+                    ]
+                );
+                return;
+            }
+
+            console.log('SearchBar: Microphone permission granted');
 
             // Check for problematic Android versions
             if (isProblematicAndroidVersion()) {
@@ -271,8 +337,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                     errorMsg.title,
                     errorMsg.message,
                     [
-                        { text: 'Cancel', style: 'cancel' },
-                        { text: 'Settings', onPress: () => Linking.openSettings() }
+                        { text: currentLanguage === 'telugu' ? 'రద్దు చేయండి' : 'ರದ್ದುಗೊಳಿಸಿ', style: 'cancel' },
+                        { 
+                            text: currentLanguage === 'telugu' ? 'సెట్టింగ్స్' : 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು',
+                            onPress: () => Linking.openSettings() 
+                        }
                     ]
                 );
             } else {
