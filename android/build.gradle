@@ -21,13 +21,19 @@ allprojects {
   
   configurations.all {
     resolutionStrategy {
-      force 'androidx.core:core:1.13.0'
-      force 'androidx.appcompat:appcompat:1.7.0'
-      force 'androidx.fragment:fragment:1.8.0'
-      force 'androidx.versionedparcelable:versionedparcelable:1.2.0'
+      force 'androidx.core:core:1.12.0'
+      force 'androidx.appcompat:appcompat:1.6.1'
+      force 'androidx.fragment:fragment:1.6.1'
+      force 'androidx.activity:activity:1.8.0'
+      force 'androidx.lifecycle:lifecycle-runtime:2.6.2'
+      force 'androidx.versionedparcelable:versionedparcelable:1.1.1'
     }
     
-    exclude group: 'com.android.support'
+    exclude group: 'com.android.support', module: 'support-compat'
+    exclude group: 'com.android.support', module: 'support-core-utils'
+    exclude group: 'com.android.support', module: 'support-core-ui'
+    exclude group: 'com.android.support', module: 'support-fragment'
+    exclude group: 'com.android.support', module: 'versionedparcelable'
   }
 }
 
