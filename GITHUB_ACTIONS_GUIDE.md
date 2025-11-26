@@ -1,4 +1,4 @@
-# GitHub Actions - Android Debug APK Build
+# GitHub Actions - Android Release APK Build
 
 ## Quick Start
 
@@ -6,14 +6,14 @@
 
 The workflow file is already saved at:
 ```
-.github/workflows/android-debug-artifact.yml
+.github/workflows/android-release-artifact.yml
 ```
 
 ### 2. Commit and Push
 
 ```bash
-git add .github/workflows/android-debug-artifact.yml
-git commit -m "Add GitHub Actions workflow for Android debug builds"
+git add .github/workflows/android-release-artifact.yml
+git commit -m "Add GitHub Actions workflow for Android release builds"
 git push origin main
 ```
 
@@ -21,7 +21,7 @@ git push origin main
 
 **Automatic:** Push to `main` branch or create a pull request
 
-**Manual:** Go to GitHub → Actions → "Build Android Debug APK" → Run workflow
+**Manual:** Go to GitHub → Actions → "Build Android Release APK" → Run workflow
 
 ## Download the APK
 
@@ -37,36 +37,36 @@ git push origin main
 
 **List recent workflow runs:**
 ```bash
-gh run list --workflow=android-debug-artifact.yml --limit 5
+gh run list --workflow=android-release-artifact.yml --limit 5
 ```
 
 **Download the latest artifact:**
 ```bash
 # Get the latest run ID
-gh run list --workflow=android-debug-artifact.yml --limit 1 --json databaseId --jq '.[0].databaseId'
+gh run list --workflow=android-release-artifact.yml --limit 1 --json databaseId --jq '.[0].databaseId'
 
 # Download artifact from specific run
-gh run download <RUN_ID> --name app-debug-apk
+gh run download <RUN_ID> --name app-release-apk
 
 # Or download from latest run automatically
-gh run download $(gh run list --workflow=android-debug-artifact.yml --limit 1 --json databaseId --jq '.[0].databaseId') --name app-debug-apk
+gh run download $(gh run list --workflow=android-release-artifact.yml --limit 1 --json databaseId --jq '.[0].databaseId') --name app-release-apk
 ```
 
 **One-liner to download latest APK:**
 ```bash
-gh run download $(gh run list --workflow=android-debug-artifact.yml --limit 1 --json databaseId --jq '.[0].databaseId') --name app-debug-apk && echo "✅ APK downloaded to ./app-debug.apk"
+gh run download $(gh run list --workflow=android-release-artifact.yml --limit 1 --json databaseId --jq '.[0].databaseId') --name app-release-apk && echo "✅ APK downloaded to ./app-release.apk"
 ```
 
 ### Option 3: Install Directly on Device
 
 After downloading:
 ```bash
-adb install app-debug.apk
+adb install app-release.apk
 ```
 
 Or if you have multiple devices:
 ```bash
-adb -s ZD222GCZDB install app-debug.apk
+adb -s ZD222GCZDB install app-release.apk
 ```
 
 ## Workflow Features
@@ -86,21 +86,22 @@ adb -s ZD222GCZDB install app-debug.apk
 - Cached builds: ~2-3 minutes
 
 ✅ **Artifact:**
-- Name: `app-debug-apk`
+- Name: `app-release-apk`
 - Retention: 30 days
 - Size: ~70-80 MB (reduced after removing voice module)
+- Signing: Debug keystore (for testing only)
 
 
 ## Troubleshooting
 
 ### APK Path Differs
 
-If the APK is not at `android/app/build/outputs/apk/debug/app-debug.apk`:
+If the APK is not at `android/app/build/outputs/apk/release/app-release.apk`:
 
 1. Check the "Verify APK exists" step in the workflow logs
 2. Update the path in the workflow file:
    ```yaml
-   path: android/app/build/outputs/apk/debug/YOUR-APK-NAME.apk
+   path: android/app/build/outputs/apk/release/YOUR-APK-NAME.apk
    ```
 
 ### Build Fails
@@ -166,25 +167,9 @@ gh auth status
 
 ```bash
 # Download last 3 builds
-for run_id in $(gh run list --workflow=android-debug-artifact.yml --limit 3 --json databaseId --jq '.[].databaseId'); do
-  gh run download $run_id --name app-debug-apk --dir "build-$run_id"
+for run_id in $(gh run list --workflow=android-release-artifact.yml --limit 3 --json databaseId --jq '.[].databaseId'); do
+  gh run download $run_id --name app-release-apk --dir "build-$run_id"
 done
-```
-
-### Build Release APK
-
-To build a release APK instead, modify the workflow:
-
-```yaml
-- name: Build release APK
-  working-directory: ./android
-  run: ./gradlew assembleRelease --no-daemon --stacktrace
-
-- name: Upload release APK
-  uses: actions/upload-artifact@v4
-  with:
-    name: app-release-apk
-    path: android/app/build/outputs/apk/release/app-release.apk
 ```
 
 ### Build on Schedule
