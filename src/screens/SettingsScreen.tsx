@@ -97,14 +97,18 @@ const SettingsScreen = () => {
     }
 
     const handleLanguageChange = async (language: Language) => {
+        // Get translations for the NEW language to show in the dialog
+        const newLangT = getTranslations(language);
+        const currentT = getTranslations(currentLanguage);
+
         // Show confirmation dialog before changing language
         Alert.alert(
-            'Change Language',
-            `This will download all content for ${language === 'telugu' ? 'Telugu' : 'Kannada'}. Continue?`,
+            currentT.changeLanguage,
+            `${newLangT.telugu === language ? currentT.telugu : currentT.kannada} ${currentT.changeLanguageConfirm}`,
             [
-                { text: 'Cancel', style: 'cancel' },
+                { text: currentT.cancel, style: 'cancel' },
                 {
-                    text: 'Continue',
+                    text: currentT.continue,
                     onPress: async () => {
                         setCurrentLanguage(language);
                         await LanguageService.setCurrentLanguage(language);
@@ -129,18 +133,19 @@ const SettingsScreen = () => {
                             // Get sync stats for success message
                             const stats = await LanguageService.getSyncStats();
 
-                            // Show success message with stats
+                            // Show success message with stats in the NEW language
                             Alert.alert(
-                                'Language Changed',
-                                `Successfully downloaded ${stats.deityCount} deities and ${stats.stotraCount} stotras in ${language === 'telugu' ? 'Telugu' : 'Kannada'}.`,
-                                [{ text: 'OK' }]
+                                t.languageChanged,
+                                `${stats.deityCount} ${t.deities} & ${stats.stotraCount} ${t.stotras} ${t.languageChangeSuccess}`,
+                                [{ text: t.ok }]
                             );
                         } catch (error) {
                             console.error('Language change sync failed:', error);
+                            const t = getTranslations(language);
                             Alert.alert(
-                                'Language Changed',
-                                'Language has been updated, but content sync failed. You can manually sync from the sync button.',
-                                [{ text: 'OK' }]
+                                t.languageChanged,
+                                t.languageChangeFailed,
+                                [{ text: t.ok }]
                             );
                         } finally {
                             setIsSyncing(false);
