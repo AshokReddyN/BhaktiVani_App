@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView, LayoutAnimation, UIManager, Platform } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView, LayoutAnimation, UIManager, Platform, Linking } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
 import { SettingsService, FontSize, Theme } from '../utils/settings'
@@ -61,6 +61,7 @@ const SettingsScreen = () => {
     const [nextSyncTime, setNextSyncTime] = useState<number | null>(null)
     const [displaySettingsExpanded, setDisplaySettingsExpanded] = useState(false)
     const [contentSettingsExpanded, setContentSettingsExpanded] = useState(false)
+    const [aboutSettingsExpanded, setAboutSettingsExpanded] = useState(false)
 
     useEffect(() => {
         const loadSettings = async () => {
@@ -260,6 +261,26 @@ const SettingsScreen = () => {
         setContentSettingsExpanded(!contentSettingsExpanded);
     };
 
+    const toggleAboutSettings = () => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setAboutSettingsExpanded(!aboutSettingsExpanded);
+    };
+
+    const handleSendFeedback = () => {
+        const email = 'ashoknarayanareddy@outlook.com';
+        const subject = encodeURIComponent('BhaktiVani App Feedback');
+        const body = encodeURIComponent('');
+
+        Linking.openURL(`mailto:${email}?subject=${subject}&body=${body}`)
+            .catch(err => {
+                Alert.alert(
+                    'Error',
+                    'Unable to open email app. Please email us at: ashoknarayanareddy@outlook.com',
+                    [{ text: 'OK' }]
+                );
+            });
+    };
+
     const formatLastSyncTime = (timestamp: number): string => {
         if (timestamp === 0) return getTranslations(currentLanguage).never
         const date = new Date(timestamp)
@@ -279,7 +300,7 @@ const SettingsScreen = () => {
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
             {/* Display Settings Group */}
             <CollapsibleGroup
-                title="DISPLAY SETTINGS"
+                title={t.displaySettings.toUpperCase()}
                 isExpanded={displaySettingsExpanded}
                 onToggle={toggleDisplaySettings}
             >
@@ -393,7 +414,7 @@ const SettingsScreen = () => {
 
             {/* Content Settings Group */}
             <CollapsibleGroup
-                title="CONTENT SETTINGS"
+                title={t.contentSettings.toUpperCase()}
                 isExpanded={contentSettingsExpanded}
                 onToggle={toggleContentSettings}
             >
@@ -474,6 +495,58 @@ const SettingsScreen = () => {
                             Next sync: {new Date(nextSyncTime).toLocaleDateString()}
                         </Text>
                     )}
+                </View>
+            </CollapsibleGroup>
+
+            {/* About & Support Group */}
+            <CollapsibleGroup
+                title={t.aboutSupport.toUpperCase()}
+                isExpanded={aboutSettingsExpanded}
+                onToggle={toggleAboutSettings}
+            >
+                {/* Temple Information */}
+                <Text style={styles.sectionTitle}>{t.templeInfo}</Text>
+                <View style={styles.infoCard}>
+                    <View style={styles.infoRow}>
+                        <Ionicons name="business-outline" size={20} color="#F97316" />
+                        <View style={styles.infoTextContainer}>
+                            <Text style={styles.infoLabel}>{t.templeName}</Text>
+                            <Text style={styles.infoValue}>{t.templeAddress}</Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Feedback Section */}
+                <Text style={styles.sectionTitle}>{t.feedback}</Text>
+                <TouchableOpacity
+                    style={styles.feedbackButton}
+                    onPress={handleSendFeedback}
+                >
+                    <View style={styles.feedbackContent}>
+                        <Ionicons name="mail-outline" size={24} color="#F97316" />
+                        <View style={styles.feedbackTextContainer}>
+                            <Text style={styles.feedbackTitle}>{t.sendFeedback}</Text>
+                            <Text style={styles.feedbackEmail}>ashoknarayanareddy@outlook.com</Text>
+                            <Text style={styles.feedbackDescription}>{t.feedbackDescription}</Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                    </View>
+                </TouchableOpacity>
+
+                {/* App Version */}
+                <Text style={styles.sectionTitle}>{t.appVersion}</Text>
+                <View style={styles.infoCard}>
+                    <View style={styles.infoRow}>
+                        <Ionicons name="information-circle-outline" size={20} color="#F97316" />
+                        <View style={styles.infoTextContainer}>
+                            <Text style={styles.infoValue}>Version 1.0.0</Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Content Attribution */}
+                <View style={styles.attributionContainer}>
+                    <Text style={styles.attributionText}>{t.contentAttributionText}</Text>
                 </View>
             </CollapsibleGroup>
         </ScrollView >
@@ -705,6 +778,78 @@ const styles = StyleSheet.create({
         height: 1,
         backgroundColor: '#E5E7EB',
         marginHorizontal: 16,
+    },
+    infoCard: {
+        backgroundColor: '#F9FAFB',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 24,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+    },
+    infoRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+    },
+    infoTextContainer: {
+        flex: 1,
+        marginLeft: 12,
+    },
+    infoLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#1F2937',
+        marginBottom: 4,
+    },
+    infoValue: {
+        fontSize: 14,
+        color: '#6B7280',
+        lineHeight: 20,
+    },
+    feedbackButton: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 24,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+    },
+    feedbackContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    feedbackTextContainer: {
+        flex: 1,
+        marginLeft: 12,
+    },
+    feedbackTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#1F2937',
+        marginBottom: 2,
+    },
+    feedbackEmail: {
+        fontSize: 13,
+        color: '#F97316',
+        marginBottom: 4,
+    },
+    feedbackDescription: {
+        fontSize: 12,
+        color: '#9CA3AF',
+    },
+    attributionContainer: {
+        backgroundColor: '#FEF3C7',
+        borderRadius: 8,
+        padding: 12,
+        marginTop: 8,
+        borderWidth: 1,
+        borderColor: '#FDE68A',
+    },
+    attributionText: {
+        fontSize: 12,
+        color: '#92400E',
+        textAlign: 'center',
+        lineHeight: 18,
     },
 })
 

@@ -29,6 +29,18 @@ export interface Translations {
     searchDeities: string
     noDeitiesFound: string
     tryDifferentSearch: string
+    displaySettings: string
+    contentSettings: string
+    aboutSupport: string
+    templeInfo: string
+    templeName: string
+    templeAddress: string
+    feedback: string
+    sendFeedback: string
+    feedbackDescription: string
+    appVersion: string
+    contentAttribution: string
+    contentAttributionText: string
 }
 
 export const translations: Record<Language, Translations> = {
@@ -61,6 +73,18 @@ export const translations: Record<Language, Translations> = {
         searchDeities: 'దేవతలను వెతకండి...',
         noDeitiesFound: 'దేవతలు కనుగొనబడలేదు',
         tryDifferentSearch: 'వేరే పేరుతో వెతకండి',
+        displaySettings: 'ప్రదర్శన సెట్టింగ్‌లు',
+        contentSettings: 'కంటెంట్ సెట్టింగ్‌లు',
+        aboutSupport: 'గురించి & మద్దతు',
+        templeInfo: 'ఆలయ సమాచారం',
+        templeName: 'శ్రీ లక్ష్మీ వేంకటేశ్వర స్వామి దేవస్థానం',
+        templeAddress: 'తడంగిపల్లి\nశ్రీ సత్య సాయి జిల్లా\nఆంధ్ర ప్రదేశ్ 515123',
+        feedback: 'అభిప్రాయం & మద్దతు',
+        sendFeedback: 'అభిప్రాయం పంపండి',
+        feedbackDescription: 'మీ సూచనలు మరియు అభిప్రాయాలను మాతో పంచుకోండి',
+        appVersion: 'యాప్ వెర్షన్',
+        contentAttribution: 'కంటెంట్ ఆపాదన',
+        contentAttributionText: 'శ్రీ లక్ష్మీ వేంకటేశ్వర స్వామి దేవస్థానం నుండి అందించబడింది',
     },
     kannada: {
         appName: 'ಭಕ್ತಿ ವಾಣಿ',
@@ -91,6 +115,18 @@ export const translations: Record<Language, Translations> = {
         searchDeities: 'ದೇವತೆಗಳನ್ನು ಹುಡುಕಿ...',
         noDeitiesFound: 'ದೇವತೆಗಳು ಕಂಡುಬಂದಿಲ್ಲ',
         tryDifferentSearch: 'ಬೇರೆ ಹೆಸರಿನಿಂದ ಹುಡುಕಿ',
+        displaySettings: 'ಪ್ರದರ್ಶನ ಸೆಟ್ಟಿಂಗ್‌ಗಳು',
+        contentSettings: 'ವಿಷಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳು',
+        aboutSupport: 'ಬಗ್ಗೆ & ಬೆಂಬಲ',
+        templeInfo: 'ದೇವಾಲಯ ಮಾಹಿತಿ',
+        templeName: 'ಶ್ರೀ ಲಕ್ಷ್ಮೀ ವೆಂಕಟೇಶ್ವರ ಸ್ವಾಮಿ ದೇವಸ್ಥಾನಂ',
+        templeAddress: 'ತಡಂಗಿಪಲ್ಲಿ\nಶ್ರೀ ಸತ್ಯ ಸಾಯಿ ಜಿಲ್ಲೆ\nಆಂಧ್ರ ಪ್ರದೇಶ 515123',
+        feedback: 'ಪ್ರತಿಕ್ರಿಯೆ & ಬೆಂಬಲ',
+        sendFeedback: 'ಪ್ರತಿಕ್ರಿಯೆ ಕಳುಹಿಸಿ',
+        feedbackDescription: 'ನಿಮ್ಮ ಸಲಹೆಗಳು ಮತ್ತು ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ನಮ್ಮೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳಿ',
+        appVersion: 'ಆ್ಯಪ್ ಆವೃತ್ತಿ',
+        contentAttribution: 'ವಿಷಯ ಆರೋಪಣೆ',
+        contentAttributionText: 'ಶ್ರೀ ಲಕ್ಷ್ಮೀ ವೆಂಕಟೇಶ್ವರ ಸ್ವಾಮಿ ದೇವಸ್ಥಾನಂದಿಂದ ಒದಗಿಸಲಾಗಿದೆ',
     },
 }
 
