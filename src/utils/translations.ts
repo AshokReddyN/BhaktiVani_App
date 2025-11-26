@@ -13,6 +13,18 @@ export interface Translations {
     syncSuccess: string
     syncError: string
     noInternet: string
+    contentAttribution: string
+    contentAttributionText: string
+    changeLanguage: string
+    changeLanguageConfirm: string
+    cancel: string
+    continue: string
+    languageChanged: string
+    languageChangeSuccess: string
+    languageChangeFailed: string
+    ok: string
+    deities: string
+    stotras: string
     selectLanguage: string
     downloadingContent: string
     telugu: string
@@ -57,6 +69,18 @@ export const translations: Record<Language, Translations> = {
         syncSuccess: 'విజయవంతంగా సమకాలీకరించబడింది!',
         syncError: 'సమకాలీకరణ విफలమైంది',
         noInternet: 'ఇంటర్నెట్ కనెక్షన్ లేదు',
+        contentAttribution: 'కంటెంట్ ఆపాదన',
+        contentAttributionText: 'శ్రీ లక్ష్మీ వేంకటేశ్వర స్వామి దేవస్థానం నుండి అందించబడింది',
+        changeLanguage: 'భాషను మార్చండి',
+        changeLanguageConfirm: 'కోసం అన్ని కంటెంట్‌ను డౌన్‌లోడ్ చేస్తుంది. కొనసాగించాలా?',
+        cancel: 'రద్దు చేయండి',
+        continue: 'కొనసాగించండి',
+        languageChanged: 'భాష మార్చబడింది',
+        languageChangeSuccess: 'లో దేవతలు మరియు స్తోత్రాలు విజయవంతంగా డౌన్‌లోడ్ చేయబడ్డాయి.',
+        languageChangeFailed: 'భాష నవీకరించబడింది, కానీ కంటెంట్ సమకాలీకరణ విఫలమైంది. మీరు సమకాలీకరణ బటన్ నుండి మాన్యువల్‌గా సమకాలీకరించవచ్చు.',
+        ok: 'సరే',
+        deities: 'దేవతలు',
+        stotras: 'స్తోత్రాలు',
         selectLanguage: 'భాషను ఎంచుకోండి',
         downloadingContent: 'కంటెంట్ డౌన్‌లోడ్ చేస్తోంది...',
         telugu: 'తెలుగు',
@@ -99,6 +123,18 @@ export const translations: Record<Language, Translations> = {
         syncSuccess: 'ಯಶಸ್ವಿಯಾಗಿ ಸಿಂಕ್ ಮಾಡಲಾಗಿದೆ!',
         syncError: 'ಸಿಂಕ್ ವಿಫಲವಾಗಿದೆ',
         noInternet: 'ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವಿಲ್ಲ',
+        contentAttribution: 'ವಿಷಯ ಆರೋಪಣೆ',
+        contentAttributionText: 'ಶ್ರೀ ಲಕ್ಷ್ಮೀ ವೆಂಕಟೇಶ್ವರ ಸ್ವಾಮಿ ದೇವಸ್ಥಾನಂದಿಂದ ಒದಗಿಸಲಾಗಿದೆ',
+        changeLanguage: 'ಭಾಷೆಯನ್ನು ಬದಲಾಯಿಸಿ',
+        changeLanguageConfirm: 'ಗಾಗಿ ಎಲ್ಲಾ ವಿಷಯವನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡುತ್ತದೆ. ಮುಂದುವರಿಸುವುದೇ?',
+        cancel: 'ರದ್ದುಮಾಡಿ',
+        continue: 'ಮುಂದುವರಿಸಿ',
+        languageChanged: 'ಭಾಷೆ ಬದಲಾಯಿಸಲಾಗಿದೆ',
+        languageChangeSuccess: 'ನಲ್ಲಿ ದೇವತೆಗಳು ಮತ್ತು ಸ್ತೋತ್ರಗಳನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ.',
+        languageChangeFailed: 'ಭಾಷೆಯನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ, ಆದರೆ ವಿಷಯ ಸಿಂಕ್ ವಿಫಲವಾಗಿದೆ. ನೀವು ಸಿಂಕ್ ಬಟನ್‌ನಿಂದ ಹಸ್ತಚಾಲಿತವಾಗಿ ಸಿಂಕ್ ಮಾಡಬಹುದು.',
+        ok: 'ಸರಿ',
+        deities: 'ದೇವತೆಗಳು',
+        stotras: 'ಸ್ತೋತ್ರಗಳು',
         selectLanguage: 'ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ',
         downloadingContent: 'ವಿಷಯವನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...',
         telugu: 'తెలుగు',
