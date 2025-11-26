@@ -83,7 +83,6 @@ To install the APK on your Android device:
 > 3. Rebuild with the production keystore
 
 > [!NOTE]
-> **Voice Search Feature**: The APK includes the @react-native-voice/voice module for voice search functionality. Make sure to grant microphone permissions when prompted.
 
 ### Build Configuration
 

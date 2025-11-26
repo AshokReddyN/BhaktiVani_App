@@ -88,7 +88,8 @@ adb -s ZD222GCZDB install app-debug.apk
 ✅ **Artifact:**
 - Name: `app-debug-apk`
 - Retention: 30 days
-- Size: ~80-90 MB
+- Size: ~70-80 MB (reduced after removing voice module)
+
 
 ## Troubleshooting
 
@@ -214,6 +215,7 @@ on:
 2. ✅ Push to GitHub
 3. ✅ Wait for build to complete
 4. ✅ Download APK
-5. ✅ Install and test voice search!
+5. ✅ Install and test the app!
 
-**The APK built by GitHub Actions will have the Voice module properly linked!** 🎤
+**The APK built by GitHub Actions will include all native modules properly linked!** 📱
+
