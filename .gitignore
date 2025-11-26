@@ -1,0 +1,101 @@
+# OSX
+.DS_Store
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# Native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.ipa
+*.apk
+
+# Android
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/app/src/main/assets/
+android/app/src/main/res/drawable-*/
+android/app/src/main/res/mipmap-*/
+android/app/src/main/res/values/
+android/.cxx/
+
+# iOS
+ios/Pods/
+ios/build/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.xcuserstate
+ios/.xcode.env.local
+
+# Node
+node_modules/
+node_modules/**/*
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+.pnp
+.pnp.js
+
+# Gradle
+.gradle/
+build/
+node_modules/@react-native/gradle-plugin/.gradle/
+node_modules/@react-native/gradle-plugin/*/build/
+node_modules/expo-modules-core/expo-module-gradle-plugin/.gradle/
+node_modules/expo-modules-core/expo-module-gradle-plugin/build/
+
+# Bundle artifacts
+*.jsbundle
+
+# CocoaPods
+/ios/Pods/
+
+# Temporary files
+*.swp
+*.swo
+*~
+.tmp/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Testing
+coverage/
+.nyc_output/
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Misc
+.cache/
+scripts/serviceAccountKey.json
+
+
+.github/instructions/kluster-code-verify.instructions.md
+.kluster

@@ -1,0 +1,73 @@
+name: Build Android Release APK
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Allow manual trigger from Actions UI
+
+jobs:
+  build:
+    name: Build Release APK
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Expo Prebuild
+        run: npx expo prebuild --platform android --clean
+        env:
+          EXPO_NO_DOTENV: 1
+      
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
+      
+      - name: Build release APK
+        working-directory: ./android
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+      
+      - name: Verify APK exists
+        run: |
+          echo "Checking for APK at: android/app/build/outputs/apk/release/app-release.apk"
+          ls -lh android/app/build/outputs/apk/release/
+      
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 30
+      
+      - name: Build complete
+        run: |
+          echo "✅ Release APK built successfully!"
+          echo "📦 Artifact name: app-release-apk"
+          echo "📥 Download from Actions UI or use: gh run download"
+          echo "⚠️  Note: APK is signed with debug keystore (for testing only)"
