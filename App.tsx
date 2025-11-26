@@ -7,6 +7,7 @@ import { LanguageService } from './src/services/languageService';
 import { migrateExistingData } from './src/database/dataMigration';
 import { database } from './src/database';
 import LanguageSelectionScreen from './src/screens/LanguageSelectionScreen';
+import { BackgroundSyncService } from './src/services/backgroundSyncService';
 
 export default function App() {
     const [isReady, setIsReady] = useState(false);
@@ -37,6 +38,10 @@ export default function App() {
 
                 // Show language selection screen if setup is not complete
                 setNeedsLanguageSelection(!setupComplete);
+
+                // Initialize background sync service
+                await BackgroundSyncService.initialize();
+                if (__DEV__) console.log('App: Background sync initialized');
             } catch (e) {
                 console.error("App: Initialization failed:", e);
                 // On error, show language selection as fallback
