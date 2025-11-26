@@ -95,3 +95,7 @@ coverage/
 # Misc
 .cache/
 scripts/serviceAccountKey.json
+
+
+.github/instructions/kluster-code-verify.instructions.md
+.kluster

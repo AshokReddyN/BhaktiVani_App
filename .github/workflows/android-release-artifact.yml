@@ -1,4 +1,4 @@
-name: Build Android Debug APK
+name: Build Android Release APK
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build Debug APK
+    name: Build Release APK
     runs-on: ubuntu-latest
     
     steps:
@@ -49,24 +49,25 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x android/gradlew
       
-      - name: Build debug APK
+      - name: Build release APK
         working-directory: ./android
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
       
       - name: Verify APK exists
         run: |
-          echo "Checking for APK at: android/app/build/outputs/apk/debug/app-debug.apk"
-          ls -lh android/app/build/outputs/apk/debug/
+          echo "Checking for APK at: android/app/build/outputs/apk/release/app-release.apk"
+          ls -lh android/app/build/outputs/apk/release/
       
-      - name: Upload debug APK
+      - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: app-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
           retention-days: 30
       
       - name: Build complete
         run: |
-          echo "✅ Debug APK built successfully!"
-          echo "📦 Artifact name: app-debug-apk"
+          echo "✅ Release APK built successfully!"
+          echo "📦 Artifact name: app-release-apk"
           echo "📥 Download from Actions UI or use: gh run download"
+          echo "⚠️  Note: APK is signed with debug keystore (for testing only)"
