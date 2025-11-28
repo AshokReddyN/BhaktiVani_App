@@ -2,37 +2,38 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native'
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { database } from '../database'
-import Stotra from '../database/models/Stotra'
+// Old Stotra model removed - using language-specific tables
 import { Q } from '@nozbe/watermelondb'
 import { Language, LanguageService } from '../services/languageService'
 import { getTranslations } from '../utils/translations'
 
 const FavoritesScreen = () => {
     const navigation = useNavigation()
-    const [favorites, setFavorites] = useState<Stotra[]>([])
+    const [favorites, setFavorites] = useState<any[]>([])
     const [currentLanguage, setCurrentLanguage] = useState<Language>('telugu')
 
     // Load language and update title
     useFocusEffect(
         useCallback(() => {
             const loadLanguage = async () => {
-                const lang = await LanguageService.getCurrentLanguage()
-                setCurrentLanguage(lang || 'telugu')
+                const lang = await LanguageService.getCurrentLanguage();
+                setCurrentLanguage(lang || 'telugu');
 
                 // Update screen title
-                const t = getTranslations(lang || 'telugu')
-                navigation.setOptions({ title: t.favorites })
+                const t = getTranslations(lang || 'telugu');
+                navigation.setOptions({ title: t.favorites });
 
-                // Fetch favorites
-                const data = await database.get<Stotra>('stotras').query(Q.where('is_favorite', true)).fetch()
-                setFavorites(data)
+                // Fetch favorites from language-specific table
+                const tableName = lang === 'telugu' ? 'stotras_telugu' : 'stotras_kannada';
+                const data = await database.get(tableName).query(Q.where('is_favorite', true)).fetch();
+                setFavorites(data);
             }
             loadLanguage()
         }, [])
     )
 
-    const renderItem = ({ item }: { item: Stotra }) => {
-        const title = currentLanguage === 'telugu' ? item.titleTelugu : item.titleKannada
+    const renderItem = ({ item }: { item: any }) => {
+        const title = item.title || item.titleEnglish;
         return (
             <TouchableOpacity
                 style={styles.favoriteCard}

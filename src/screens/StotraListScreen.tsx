@@ -3,8 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import { database } from '../database'
-import Stotra from '../database/models/Stotra'
-import Deity from '../database/models/Deity'
+// Old models removed - using language-specific tables
 import { Q } from '@nozbe/watermelondb'
 import { Language, LanguageService } from '../services/languageService'
 import { getTranslations } from '../utils/translations'
@@ -14,16 +13,18 @@ const StotraListScreen = () => {
     const navigation = useNavigation()
     const route = useRoute()
     const { deityId, deityName } = route.params as { deityId: string, deityName: string }
-    const [stotras, setStotras] = useState<Stotra[]>([])
+    const [stotras, setStotras] = useState<any[]>([])
     const [currentLanguage, setCurrentLanguage] = useState<Language>('telugu')
-    const [deity, setDeity] = useState<Deity | null>(null)
+    const [deity, setDeity] = useState<any | null>(null)
     const [searchQuery, setSearchQuery] = useState('')
 
     const fetchStotras = useCallback(async () => {
-        const collection = database.get<Stotra>('stotras')
-        const query = collection.query(Q.where('deity_id', deityId))
-        const data = await query.fetch()
-        setStotras(data)
+        const lang = await LanguageService.getCurrentLanguage();
+        const tableName = lang === 'telugu' ? 'stotras_telugu' : 'stotras_kannada';
+        const collection = database.get(tableName);
+        const query = collection.query(Q.where('deity_id', deityId));
+        const data = await query.fetch();
+        setStotras(data);
     }, [deityId])
 
     // Filter stotras based on search query
@@ -37,13 +38,9 @@ const StotraListScreen = () => {
         return stotras.filter(stotra => {
             const title = (stotra.title || '').toLowerCase();
             const titleEnglish = (stotra.titleEnglish || '').toLowerCase();
-            const titleTelugu = (stotra.titleTelugu || '').toLowerCase();
-            const titleKannada = (stotra.titleKannada || '').toLowerCase();
 
             return title.includes(normalizedQuery) ||
-                titleEnglish.includes(normalizedQuery) ||
-                titleTelugu.includes(normalizedQuery) ||
-                titleKannada.includes(normalizedQuery);
+                titleEnglish.includes(normalizedQuery);
         });
     }, [stotras, searchQuery]);
 
@@ -51,19 +48,19 @@ const StotraListScreen = () => {
     useFocusEffect(
         useCallback(() => {
             const loadLanguage = async () => {
-                const lang = await LanguageService.getCurrentLanguage()
-                setCurrentLanguage(lang || 'telugu')
+                const lang = await LanguageService.getCurrentLanguage();
+                setCurrentLanguage(lang || 'telugu');
 
                 // Fetch deity to get language-specific name
-                const deityRecord = await database.get<Deity>('deities').find(deityId)
-                setDeity(deityRecord)
+                const deityTableName = lang === 'telugu' ? 'deities_telugu' : 'deities_kannada';
+                const deityRecord = await database.get(deityTableName).find(deityId);
+                setDeity(deityRecord);
 
-                // Update screen title with deity name in selected language
-                const deityNameInLanguage = lang === 'telugu' ? deityRecord.nameTelugu : deityRecord.nameKannada
-                navigation.setOptions({ title: deityNameInLanguage })
+                // Update screen title with deity name
+                navigation.setOptions({ title: deityRecord.name });
 
                 // Re-fetch stotras to trigger re-render
-                await fetchStotras()
+                await fetchStotras();
             }
             loadLanguage()
         }, [fetchStotras, deityId, navigation])
@@ -74,21 +71,11 @@ const StotraListScreen = () => {
     }, [navigation])
 
     const t = getTranslations(currentLanguage)
-    const deityNameInLanguage = deity ? (currentLanguage === 'telugu' ? deity.nameTelugu : deity.nameKannada) : deityName
+    const deityNameInLanguage = deity ? deity.name : deityName
 
-    const renderItem = ({ item }: { item: Stotra }) => {
-        // Get language-specific title with proper fallback
-        // Handle empty strings as well as null/undefined
-        let displayTitle: string;
-        if (currentLanguage === 'telugu') {
-            displayTitle = (item.titleTelugu && item.titleTelugu.trim()) || item.title || 'Untitled';
-        } else {
-            // For Kannada, prefer Kannada title, fallback to Telugu if Kannada is empty, then to generic title
-            displayTitle = (item.titleKannada && item.titleKannada.trim())
-                || (item.titleTelugu && item.titleTelugu.trim())
-                || item.title
-                || 'Untitled';
-        }
+    const renderItem = ({ item }: { item: any }) => {
+        // Title is already in correct language from language-specific table
+        let displayTitle: string = item.title || item.titleEnglish || 'Untitled';
 
         return (
             <TouchableOpacity

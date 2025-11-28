@@ -84,6 +84,65 @@ export const LanguageService = {
     },
 
     /**
+     * Clear all language-related data (for testing/debugging)
+     */
+    async clearAll(): Promise<void> {
+        try {
+            await AsyncStorage.multiRemove([
+                KEYS.CURRENT_LANGUAGE,
+                KEYS.LAST_SYNC_TIMESTAMP,
+                KEYS.INITIAL_SETUP_COMPLETE,
+                KEYS.SYNC_STATS,
+            ])
+        } catch (error) {
+            console.error('Error clearing language data:', error)
+        }
+    },
+
+    /**
+     * Get active table names for current language
+     */
+    async getActiveTableNames(): Promise<{ deities: string; stotras: string } | null> {
+        const language = await this.getCurrentLanguage();
+        if (!language) return null;
+
+        return {
+            deities: `deities_${language}`,
+            stotras: `stotras_${language}`,
+        };
+    },
+
+    /**
+     * Get Firebase collection names for current language
+     */
+    async getFirebaseCollectionNames(): Promise<{ deities: string; stotras: string } | null> {
+        const language = await this.getCurrentLanguage();
+        if (!language) return null;
+
+        return {
+            deities: `deities_${language}`,
+            stotras: `stotras_${language}`,
+        };
+    },
+
+    /**
+     * Get model class names for current language
+     */
+    getModelClassNames(language: Language): { deity: string; stotra: string } {
+        if (language === 'telugu') {
+            return {
+                deity: 'DeityTelugu',
+                stotra: 'StotraTelugu',
+            };
+        } else {
+            return {
+                deity: 'DeityKannada',
+                stotra: 'StotraKannada',
+            };
+        }
+    },
+
+    /**
      * Reset all language-related settings (for testing/debugging)
      */
     async resetAll(): Promise<void> {
