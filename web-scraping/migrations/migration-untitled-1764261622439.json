@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "createdAt": "2025-11-27T16:40:22.439Z",
+  "source": "https://www.prapatti.com/slokas/telugu/lakshmiihrudayam.pdf",
+  "collections": {
+    "content": {
+      "id": "untitled-1764261622439",
+      "title": "Untitled",
+      "url": "https://www.prapatti.com/slokas/telugu/lakshmiihrudayam.pdf",
+      "description": "",
+      "author": "",
+      "keywords": "",
+      "headings": [],
+      "paragraphs": [],
+      "links": [],
+      "images": [],
+      "createdAt": "2025-11-27T16:40:22.438Z",
+      "updatedAt": "2025-11-27T16:40:22.438Z"
+    }
+  },
+  "firebaseImport": {
+    "__collections__": {
+      "scrapedContent": {
+        "untitled-1764261622439": {
+          "title": "Untitled",
+          "url": "https://www.prapatti.com/slokas/telugu/lakshmiihrudayam.pdf",
+          "description": "",
+          "author": "",
+          "keywords": "",
+          "headingsCount": 0,
+          "paragraphsCount": 0,
+          "linksCount": 0,
+          "imagesCount": 0,
+          "fullData": {
+            "url": "https://www.prapatti.com/slokas/telugu/lakshmiihrudayam.pdf",
+            "title": "Untitled",
+            "headings": [],
+            "paragraphs": [],
+            "links": [],
+            "images": [],
+            "metadata": {
+              "description": "",
+              "keywords": "",
+              "author": ""
+            },
+            "scrapedAt": "2025-11-27T16:40:22.438Z"
+          },
+          "createdAt": {
+            "__datatype__": "timestamp",
+            "value": "2025-11-27T16:40:22.438Z"
+          },
+          "updatedAt": {
+            "__datatype__": "timestamp",
+            "value": "2025-11-27T16:40:22.438Z"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "createdAt": "2025-11-27T16:34:20.716Z",
+  "source": "https://example.com",
+  "collections": {
+    "content": {
+      "id": "example-domain-1764261260716",
+      "title": "Example Domain",
+      "url": "https://example.com",
+      "description": "",
+      "author": "",
+      "keywords": "",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Example Domain"
+        }
+      ],
+      "paragraphs": [
+        "This domain is for use in documentation examples without needing permission. Avoid use in operations."
+      ],
+      "links": [
+        {
+          "url": "https://iana.org/domains/example",
+          "text": "Learn more"
+        }
+      ],
+      "images": [],
+      "createdAt": "2025-11-27T16:34:20.715Z",
+      "updatedAt": "2025-11-27T16:34:20.715Z"
+    }
+  },
+  "firebaseImport": {
+    "__collections__": {
+      "scrapedContent": {
+        "example-domain-1764261260716": {
+          "title": "Example Domain",
+          "url": "https://example.com",
+          "description": "",
+          "author": "",
+          "keywords": "",
+          "headingsCount": 1,
+          "paragraphsCount": 1,
+          "linksCount": 1,
+          "imagesCount": 0,
+          "fullData": {
+            "url": "https://example.com",
+            "title": "Example Domain",
+            "headings": [
+              {
+                "level": "h1",
+                "text": "Example Domain"
+              }
+            ],
+            "paragraphs": [
+              "This domain is for use in documentation examples without needing permission. Avoid use in operations."
+            ],
+            "links": [
+              {
+                "url": "https://iana.org/domains/example",
+                "text": "Learn more"
+              }
+            ],
+            "images": [],
+            "metadata": {
+              "description": "",
+              "keywords": "",
+              "author": ""
+            },
+            "scrapedAt": "2025-11-27T16:34:20.715Z"
+          },
+          "createdAt": {
+            "__datatype__": "timestamp",
+            "value": "2025-11-27T16:34:20.715Z"
+          },
+          "updatedAt": {
+            "__datatype__": "timestamp",
+            "value": "2025-11-27T16:34:20.715Z"
+          }
+        }
+      }
+    }
+  }
+}
