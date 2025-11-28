@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native'
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { database } from '../database'
-import Deity from '../database/models/Deity'
+// Deity model removed - using language-specific tables
 import { LanguageService } from '../services/languageService'
 import { SearchBar } from '../components/SearchBar'
 import { searchDeities, getDeityDisplayName } from '../utils/searchUtils'
@@ -10,7 +10,7 @@ import { getTranslation } from '../utils/translations'
 
 const HomeScreen = () => {
     const navigation = useNavigation()
-    const [deities, setDeities] = useState<Deity[]>([])
+    const [deities, setDeities] = useState<any[]>([])
     const [currentLanguage, setCurrentLanguage] = useState<'telugu' | 'kannada'>('telugu')
     const [searchQuery, setSearchQuery] = useState('')
 
@@ -24,21 +24,13 @@ const HomeScreen = () => {
         React.useCallback(() => {
             const loadDeitiesAndLanguage = async () => {
                 try {
-                    const deitiesCollection = database.get<Deity>('deities');
+                    // Query language-specific table
+                    const currentLang = await LanguageService.getCurrentLanguage();
+                    const tableName = currentLang === 'telugu' ? 'deities_telugu' : 'deities_kannada';
+                    const deitiesCollection = database.get(tableName);
                     const allDeities = await deitiesCollection.query().fetch();
                     console.log(`HomeScreen: Loaded ${allDeities.length} deities`);
                     setDeities(allDeities);
-
-                    // If no deities found, try to seed database
-                    if (allDeities.length === 0) {
-                        console.log('HomeScreen: No deities found, attempting to seed database...');
-                        const { seedDatabase } = require('../database/seed');
-                        await seedDatabase();
-                        // Re-fetch after seeding
-                        const refreshedDeities = await deitiesCollection.query().fetch();
-                        console.log(`HomeScreen: After seeding, found ${refreshedDeities.length} deities`);
-                        setDeities(refreshedDeities);
-                    }
 
                     // Also refresh current language in case it changed
                     const lang = await LanguageService.getCurrentLanguage();
@@ -54,19 +46,11 @@ const HomeScreen = () => {
     useEffect(() => {
         const fetchDeities = async () => {
             try {
-                const data = await database.get<Deity>('deities').query().fetch();
+                const lang = await LanguageService.getCurrentLanguage();
+                const tableName = lang === 'telugu' ? 'deities_telugu' : 'deities_kannada';
+                const data = await database.get(tableName).query().fetch();
                 console.log(`HomeScreen: Initial load - ${data.length} deities`);
                 setDeities(data);
-
-                // If no data, try seeding
-                if (data.length === 0) {
-                    console.log('HomeScreen: No deities on initial load, seeding...');
-                    const { seedDatabase } = require('../database/seed');
-                    await seedDatabase();
-                    const refreshed = await database.get<Deity>('deities').query().fetch();
-                    console.log(`HomeScreen: After seeding - ${refreshed.length} deities`);
-                    setDeities(refreshed);
-                }
             } catch (error) {
                 console.error('HomeScreen: Error in useEffect:', error);
             }
@@ -74,7 +58,7 @@ const HomeScreen = () => {
         fetchDeities();
     }, [])
 
-    const renderItem = ({ item }: { item: Deity }) => {
+    const renderItem = ({ item }: { item: any }) => {
         // Map deity image field to actual image files
         const getDeityImage = (imageName: string) => {
             const imageMap: { [key: string]: any } = {
@@ -91,9 +75,8 @@ const HomeScreen = () => {
             return imageMap[imageName] || null;
         };
 
-        const deityName = currentLanguage === 'telugu'
-            ? (item.nameTelugu || item.name)
-            : (item.nameKannada || item.name);
+        // Name is already in correct language from language-specific table
+        const deityName = item.name || item.nameEnglish;
 
         const imageSource = getDeityImage(item.image);
 

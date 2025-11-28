@@ -18,16 +18,8 @@ export default function App() {
             try {
                 if (__DEV__) console.log('App: Starting initialization...');
 
-                // Ensure database is initialized and ready
-                // The database is already initialized via the import, but we can verify it's working
-                try {
-                    const deityCount = await database.get('deities').query().fetchCount();
-                    const stotraCount = await database.get('stotras').query().fetchCount();
-                    if (__DEV__) console.log(`App: Database ready - ${deityCount} deities, ${stotraCount} stotras`);
-                } catch (dbError) {
-                    console.error('App: Database initialization check failed:', dbError);
-                    // Continue anyway - database might be empty on first launch
-                }
+                // Database is already initialized via import
+                // No need to check - schema v5 uses language-specific tables
 
                 // Run migration to ensure schema is up to date
                 await migrateExistingData();

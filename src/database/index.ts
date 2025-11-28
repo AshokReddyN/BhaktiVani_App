@@ -1,8 +1,11 @@
 import { Database } from '@nozbe/watermelondb'
 import { schema } from './schema'
 import migrations from './migrations'
-import Deity from './models/Deity'
-import Stotra from './models/Stotra'
+// Old models removed - using language-specific models only
+import DeityTelugu from './models/DeityTelugu'
+import DeityKannada from './models/DeityKannada'
+import StotraTelugu from './models/StotraTelugu'
+import StotraKannada from './models/StotraKannada'
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite'
 import { Platform } from 'react-native'
 
@@ -47,8 +50,11 @@ console.log(`Database: Adapter initialized (${isExpoGo ? 'LokiJS' : 'SQLite'})`)
 export const database = new Database({
     adapter,
     modelClasses: [
-        Deity,
-        Stotra,
+        // Only language-specific models
+        DeityTelugu,
+        DeityKannada,
+        StotraTelugu,
+        StotraKannada,
     ],
 })
 

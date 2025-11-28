@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-nati
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import { database } from '../database'
-import Stotra from '../database/models/Stotra'
+// Old Stotra model removed - using language-specific tables
 import { SettingsService, FontSize, Theme } from '../utils/settings'
 import { Language, LanguageService } from '../services/languageService'
 
@@ -11,7 +11,7 @@ const StotraDetailScreen = () => {
     const navigation = useNavigation()
     const route = useRoute()
     const { stotraId } = route.params as { stotraId: string }
-    const [stotra, setStotra] = useState<Stotra | null>(null)
+    const [stotra, setStotra] = useState<any | null>(null)
     const [isFavorite, setIsFavorite] = useState(false)
     const [fontSize, setFontSize] = useState(18)
     const [fontSizeSetting, setFontSizeSetting] = useState<FontSize>('medium')
@@ -23,16 +23,17 @@ const StotraDetailScreen = () => {
     useFocusEffect(
         useCallback(() => {
             const loadSettings = async () => {
-                const loadedFontSize = await SettingsService.getFontSize()
-                const loadedTheme = await SettingsService.getTheme()
-                const lang = await LanguageService.getCurrentLanguage()
-                setFontSizeSetting(loadedFontSize)
-                setTheme(loadedTheme)
-                setFontSize(SettingsService.getFontSizeValue(loadedFontSize))
-                setCurrentLanguage(lang || 'telugu')
+                const loadedFontSize = await SettingsService.getFontSize();
+                const loadedTheme = await SettingsService.getTheme();
+                const lang = await LanguageService.getCurrentLanguage();
+                setFontSizeSetting(loadedFontSize);
+                setTheme(loadedTheme);
+                setFontSize(SettingsService.getFontSizeValue(loadedFontSize));
+                setCurrentLanguage(lang || 'telugu');
                 // Re-fetch stotra to trigger re-render
-                const fetchedStotra = await database.get<Stotra>('stotras').find(stotraId)
-                setStotra(fetchedStotra)
+                const tableName = lang === 'telugu' ? 'stotras_telugu' : 'stotras_kannada';
+                const fetchedStotra = await database.get(tableName).find(stotraId);
+                setStotra(fetchedStotra);
             }
             loadSettings()
         }, [stotraId])
@@ -40,9 +41,11 @@ const StotraDetailScreen = () => {
 
     useEffect(() => {
         const fetchStotra = async () => {
-            const data = await database.get<Stotra>('stotras').find(stotraId)
-            setStotra(data)
-            setIsFavorite(data.isFavorite)
+            const lang = await LanguageService.getCurrentLanguage();
+            const tableName = lang === 'telugu' ? 'stotras_telugu' : 'stotras_kannada';
+            const data = await database.get(tableName).find(stotraId);
+            setStotra(data);
+            setIsFavorite(data.isFavorite);
         }
         fetchStotra()
     }, [stotraId])
@@ -69,9 +72,11 @@ const StotraDetailScreen = () => {
             await CacheService.updateStotraFavorite(stotraId, newFavoriteState);
 
             // Refetch to ensure sync with database
-            const updated = await database.get<Stotra>('stotras').find(stotraId)
-            setStotra(updated)
-            setIsFavorite(updated.isFavorite)
+            const lang = await LanguageService.getCurrentLanguage();
+            const tableName = lang === 'telugu' ? 'stotras_telugu' : 'stotras_kannada';
+            const updated = await database.get(tableName).find(stotraId);
+            setStotra(updated);
+            setIsFavorite(updated.isFavorite);
         } catch (error) {
             console.error('Error toggling favorite:', error)
             // Revert on error
@@ -82,19 +87,10 @@ const StotraDetailScreen = () => {
     }, [stotra, stotraId, isFavorite, isToggling])
 
     useLayoutEffect(() => {
-        // Get language-specific title with proper fallback
-        // Handle empty strings as well as null/undefined
+        // Title is already in correct language from language-specific table
         let displayTitle = 'Loading...';
         if (stotra) {
-            if (currentLanguage === 'telugu') {
-                displayTitle = (stotra.titleTelugu && stotra.titleTelugu.trim()) || stotra.title || 'Untitled';
-            } else {
-                // For Kannada, prefer Kannada title, fallback to Telugu if Kannada is empty, then to generic title
-                displayTitle = (stotra.titleKannada && stotra.titleKannada.trim())
-                    || (stotra.titleTelugu && stotra.titleTelugu.trim())
-                    || stotra.title
-                    || 'Untitled';
-            }
+            displayTitle = stotra.title || stotra.titleEnglish || 'Untitled';
         }
 
         navigation.setOptions({
@@ -130,13 +126,7 @@ const StotraDetailScreen = () => {
                         color: themeColors.text,
                     }
                 ]}>
-                    {currentLanguage === 'telugu'
-                        ? ((stotra.textTelugu && stotra.textTelugu.trim()) || stotra.content || 'Content not available')
-                        : ((stotra.textKannada && stotra.textKannada.trim())
-                            || (stotra.textTelugu && stotra.textTelugu.trim())
-                            || stotra.content
-                            || 'Content not available')
-                    }
+                    {stotra.content || 'Content not available'}
                 </Text>
             </ScrollView>
 

@@ -1,5 +1,5 @@
 import Fuse from 'fuse.js';
-import Deity from '../database/models/Deity';
+// Deity model import removed - now works with language-specific models
 
 /**
  * Common prefixes to remove during normalization
@@ -64,13 +64,13 @@ export const tokenizeQuery = (query: string): string[] => {
 
 /**
  * Search deities using fuzzy matching with normalization
- * Supports multi-token queries and multi-language names
+ * Works with language-specific deity tables
  */
 export const searchDeities = (
-    deities: Deity[],
+    deities: any[],
     query: string,
     currentLanguage: 'telugu' | 'kannada' = 'telugu'
-): Deity[] => {
+): any[] => {
     if (!query || query.trim().length === 0) {
         return deities;
     }
@@ -79,15 +79,11 @@ export const searchDeities = (
 
     // First try simple substring matching for better UX
     const substringMatches = deities.filter(deity => {
-        const name = deity.name.toLowerCase();
+        const name = (deity.name || '').toLowerCase();
         const english = (deity.nameEnglish || '').toLowerCase();
-        const telugu = (deity.nameTelugu || '').toLowerCase();
-        const kannada = (deity.nameKannada || '').toLowerCase();
 
         return name.includes(normalizedQuery) ||
-            english.includes(normalizedQuery) ||
-            telugu.includes(normalizedQuery) ||
-            kannada.includes(normalizedQuery);
+            english.includes(normalizedQuery);
     });
 
     // If we have substring matches, return them
@@ -102,18 +98,16 @@ export const searchDeities = (
     const fuse = new Fuse(deities, {
         keys: [
             { name: 'name', weight: 1.0 },
-            { name: 'nameEnglish', weight: 1.0 },
-            { name: 'nameTelugu', weight: 0.9 },
-            { name: 'nameKannada', weight: 0.9 }
+            { name: 'nameEnglish', weight: 0.9 }
         ],
-        threshold: 0.6, // More lenient for fuzzy matching
+        threshold: 0.6,
         distance: 100,
         includeScore: true,
         ignoreLocation: true,
     });
 
     // Search for each token
-    const results = new Map<string, { deity: Deity; score: number }>();
+    const results = new Map<string, { deity: any; score: number }>();
 
     for (const token of tokens) {
         const searchResults = fuse.search(token);
@@ -124,13 +118,7 @@ export const searchDeities = (
 
             // Also check normalized names for exact/partial matches
             const normalizedName = normalizeText(deity.name);
-            const normalizedTelugu = normalizeText(deity.nameTelugu || '');
-            const normalizedKannada = normalizeText(deity.nameKannada || '');
-
-            const exactMatch =
-                normalizedName.includes(token) ||
-                normalizedTelugu.includes(token) ||
-                normalizedKannada.includes(token);
+            const exactMatch = normalizedName.includes(token);
 
             // Boost score for exact matches
             const finalScore = exactMatch ? score * 0.5 : score;
@@ -150,14 +138,11 @@ export const searchDeities = (
 
 /**
  * Get display name for deity based on current language
+ * With language-specific tables, name is already in correct language
  */
 export const getDeityDisplayName = (
-    deity: Deity,
+    deity: any,
     language: 'telugu' | 'kannada'
 ): string => {
-    if (language === 'telugu') {
-        return deity.nameTelugu || deity.name;
-    } else {
-        return deity.nameKannada || deity.name;
-    }
+    return deity.name || deity.nameEnglish || 'Unknown';
 };

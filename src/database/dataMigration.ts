@@ -74,17 +74,22 @@ async function processInChunks<T>(
 
 /**
  * One-time migration to populate new language fields from existing data
- * This migration is:
- * - Idempotent: Safe to run multiple times
- * - Chunked: Processes data in chunks to avoid blocking UI
- * - Transactional: Each chunk is processed in a transaction
- * - Versioned: Tracks completion to avoid repeated work
+ * DISABLED: This migration is no longer needed with schema v5 (language-specific tables)
+ * The old 'deities' and 'stotras' tables no longer exist.
  */
 export async function migrateExistingData(
     onProgress?: MigrationProgressCallback
 ): Promise<void> {
     console.log('Checking migration status...');
 
+    // MIGRATION DISABLED - No longer needed with language-specific tables
+    console.log('Data migration skipped - using language-specific tables (schema v5)');
+
+    // Mark as complete to prevent retries
+    await setMigrationVersion(CURRENT_MIGRATION_VERSION);
+    return;
+
+    /* OLD MIGRATION CODE - DISABLED
     try {
         // Check if migration has already been completed
         const currentVersion = await getMigrationVersion();
@@ -181,6 +186,7 @@ export async function migrateExistingData(
         // Don't save migration version on failure - will retry next time
         throw error;
     }
+    */
 }
 
 /**
